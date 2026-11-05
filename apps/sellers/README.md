@@ -1,5 +1,7 @@
 # @neverdown/sellers — x402 RPC merchant (C1)
 
+Chunk plan: [docs/BUILD-CHUNKS.md](../../docs/BUILD-CHUNKS.md#c1--x402-seller-returns-http-402).
+
 A small HTTP merchant that sells JSON-RPC access on **Hedera testnet** using the
 [x402](https://github.com/x402-foundation/x402) payment protocol (v2, `exact` scheme).
 NeverDown's Supreme Agent will later buy capacity from merchants like this one.
