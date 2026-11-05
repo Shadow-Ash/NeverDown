@@ -50,3 +50,5 @@ pnpm --filter @neverdown/sellers test   # C1 suite must stay green
 | `packages/core/src/x402/` | Buyer config, `x402HTTPClient`, `payForRpcOnce` |
 | `scripts/pay-once.ts` | Live CLI gate |
 | `apps/sellers` | C1 merchant (unchanged settle path via middleware) |
+
+Live settle is Hedera **testnet** only for C2.
