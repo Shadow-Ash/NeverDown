@@ -7,6 +7,7 @@ export type HederaBuyerCredentials = {
   accountId: string;
   privateKey: string;
   network?: "hedera:testnet";
+  maxPaymentTinybars?: string;
 };
 
 /**
@@ -18,5 +19,11 @@ export function createHederaX402HttpClient(creds: HederaBuyerCredentials): x402H
   const key = PrivateKey.fromString(creds.privateKey);
   const signer = createClientHederaSigner(creds.accountId, key, { network });
   const core = new x402Client().register("hedera:*", new ExactHederaScheme(signer));
+  // Enable explicit SDK spend controls instead of disabling them entirely.
+  const maxPayment = creds.maxPaymentTinybars ?? process.env.POLICY_CAP_TINYBARS ?? process.env.HEDERA_X402_PRICE_SMALLEST_UNITS ?? "10000";
+  core.setSpendControls({
+    maxAmountPerPayment: maxPayment,
+    allowedAssets: [{ network, asset: "0.0.0", maxAmountPerPayment: maxPayment }],
+  });
   return new x402HTTPClient(core);
 }
