@@ -209,8 +209,20 @@ Other scripts: `pnpm --filter @neverdown/sellers typecheck` and `pnpm --filter @
 
 ## What C2 adds
 
-- An x402 buyer script that signs and submits a Hedera `exact` payment.
-- Real verification and settlement on `hedera:testnet` through the facilitator, with the `PAYMENT-RESPONSE` settlement metadata returned to the buyer.
-- End-to-end tests: paid request → upstream/mock result, and a 402 → pay → 200 flow.
+Buyer lives in `@neverdown/core` + `scripts/pay-once.ts` (see [docs/C2-PAY-ONCE.md](../../docs/C2-PAY-ONCE.md)).
+
+1. Set `HEDERA_SPEND_ID` + `HEDERA_SPEND_KEY` in root `.env` (funded testnet account).
+2. Start this merchant: `pnpm --filter @neverdown/sellers dev`
+3. Pay once: `pnpm pay:once`
+
+That script:
+
+- `POST /rpc` unpaid → reads `PAYMENT-REQUIRED`
+- Signs Hedera exact `cryptoTransfer` via `@x402/hedera` + `@x402/core` HTTP client
+- Retries with `PAYMENT-SIGNATURE`
+- Prints Hedera `transactionId` + HashScan URL (live settle through the facilitator)
+
+Hermetic buyer tests (mocked fetch): `pnpm --filter @neverdown/core test`.  
+Seller C1 tests must stay green: `pnpm --filter @neverdown/sellers test`.
 
 Policy checks, Arkiv discovery, ENS allowlists, HCS audit logging, and provider failover are later chunks.

@@ -8,7 +8,13 @@
     "build": "pnpm -r run build",
     "dev": "pnpm -r --parallel run dev",
     "lint": "pnpm -r run lint",
-    "typecheck": "pnpm -r run typecheck"
+    "typecheck": "pnpm -r run typecheck",
+    "pay:once": "node --env-file-if-exists=.env --import tsx scripts/pay-once.ts",
+    "test:core": "pnpm --filter @neverdown/core test",
+    "test:sellers": "pnpm --filter @neverdown/sellers test"
+  },
+  "devDependencies": {
+    "tsx": "^4.20.0"
   },
   "engines": {
     "node": ">=20"

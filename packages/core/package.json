@@ -13,9 +13,19 @@
     }
   },
   "scripts": {
-    "build": "echo \"@neverdown/core: scaffold only (C0)\"",
-    "dev": "echo \"@neverdown/core: scaffold only (C0)\"",
+    "build": "tsc -p tsconfig.build.json",
+    "dev": "tsc -p tsconfig.build.json --watch",
+    "test": "node --import tsx --test \"test/**/*.test.ts\"",
     "lint": "echo \"ok\"",
-    "typecheck": "echo \"ok\""
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@x402/core": "2.30.0",
+    "@x402/hedera": "2.30.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0"
   }
 }

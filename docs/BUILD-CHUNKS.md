@@ -13,8 +13,8 @@ Do **not** start UI (C9) before rails (C1–C7) and agent (C8) work.
 | Chunk | Name | Status | Gate |
 |---|---|---|---|
 | C0 | Monorepo scaffold | **Done** | `pnpm install` |
-| C1 | x402 seller (402 only) | Not started | `curl` → HTTP 402 |
-| C2 | Hedera pay roundtrip | Not started | HashScan tx id |
+| C1 | x402 seller (402 only) | **Done + tested** | unpaid `POST /rpc` → HTTP 402 |
+| C2 | Hedera pay roundtrip | **Code done** (live gate needs `HEDERA_SPEND_*`) | `pnpm pay:once` → HashScan tx id |
 | C3 | PolicyEngine + HCS | Not started | Deny + PAY logged |
 | C4 | Gateway fast plane | Not started | Failover without AI |
 | C5 | Arkiv offers | Not started | Live query returns offers |
@@ -126,48 +126,29 @@ Paying, PolicyEngine, Arkiv, UI.
 
 ### Goal
 
-Script pays the C1 merchant end-to-end on **Hedera testnet** via a listed facilitator (Official x402 / Ax402 / Blocky402). No human approve click.
+Script pays the C1 merchant end-to-end on **Hedera testnet** via facilitator. No human approve click.
 
-### Why
+### Implemented
 
-Hedera qualification: settled payment + HashScan tx id in README later.
-
-### Build only
-
-`packages/core/src/x402/**`, `scripts/pay-once.ts`
-
-### Detailed steps
-
-1. Fund a **spend** account on Hedera testnet (cap small, e.g. enough for a few packs).
-2. Implement client using `@x402/hedera` `ExactHederaScheme` + `createClientHederaSigner`.
-3. Flow:
-   - Request `/v1/rpc-pack` → parse 402 requirements  
-   - Build/sign partially signed `TransferTransaction` (`cryptoTransfer`)  
-   - Retry request with `X-PAYMENT` (or facilitator verify/settle path per docs)  
-   - Print `transactionId`  
-4. Update seller to accept valid payment and return a short-lived access token / credit (minimal stub JSON is fine).
-5. Paste HashScan link into a `docs/HEDERA-PAYMENTS.md` scratch note (README final copy waits for C10).
+- `@neverdown/core` `src/x402/` — `loadBuyerConfig`, `createHederaX402HttpClient`, `payForRpcOnce`
+- `scripts/pay-once.ts` + root `pnpm pay:once`
+- Hermetic tests with mocked fetch
+- Docs: [C2-PAY-ONCE.md](./C2-PAY-ONCE.md)
 
 ### Gate
 
 ```bash
-pnpm exec tsx scripts/pay-once.ts
-# → prints transactionId like 0.0.x@seconds.nanos
-# open https://hashscan.io/testnet/transaction/<id>
+pnpm --filter @neverdown/sellers dev   # terminal A
+pnpm pay:once                          # terminal B — needs HEDERA_SPEND_ID + HEDERA_SPEND_KEY
+# → transactionId + https://hashscan.io/testnet/transaction/...
 ```
 
 ### Done when
 
-- [ ] At least one settled testnet payment  
-- [ ] Tx id verified on HashScan  
-- [ ] No human approval in the script path  
+- [x] Buyer code + hermetic tests  
+- [ ] Live settled testnet payment (fill spend env + faucet)  
+- [x] No human approval in the script path  
 - [ ] Commit: `feat(core): C2 hedera x402 pay-once`  
-
-### Failure modes to handle
-
-- Wrong `feePayer` → document which facilitator fixed it  
-- Insufficient balance → clear error  
-- Facilitator timeout → retry once, log body  
 
 ---
 

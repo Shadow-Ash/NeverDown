@@ -19,6 +19,7 @@ It is **programmable application resilience** with a fast failover plane and an 
 |---|---|
 | **This README** | Product, prizes, demo, status, quick start |
 | **[docs/BUILD-CHUNKS.md](docs/BUILD-CHUNKS.md)** | **Detailed C0→C10 steps, gates, file ownership** |
+| **[docs/C2-PAY-ONCE.md](docs/C2-PAY-ONCE.md)** | C2 buyer: env, `pnpm pay:once`, HashScan |
 | **[docs/neverdown-architecture.md](docs/neverdown-architecture.md)** | Planes, components, flows, security honesty |
 | **[docs/neverdown-architecture.excalidraw](docs/neverdown-architecture.excalidraw)** | Editable architecture diagram |
 
@@ -145,8 +146,8 @@ We build **small chunks with hard gates**. Details for every step:
 | Chunk | Deliverable | Gate |
 |---|---|---|
 | **C0** | Monorepo scaffold | `pnpm install` — **done** |
-| C1 | Seller returns HTTP 402 | `curl` shows 402 |
-| C2 | Pay on Hedera testnet | HashScan tx id |
+| **C1** | Seller returns HTTP 402 | unpaid `POST /rpc` → 402 — **done + tested** |
+| **C2** | Pay on Hedera testnet | `pnpm pay:once` → HashScan — **code done** (needs `HEDERA_SPEND_*`) |
 | C3 | Policy + HCS PAY/DENY | Over-cap refuses |
 | C4 | Gateway failover | Works with AI offline |
 | C5 | Arkiv offers seed/query | Live query |
@@ -226,7 +227,9 @@ Fill `.env` before C1/C2 (Hedera, facilitator, later Arkiv/ENS). **Never commit 
 | Product vision | Locked |
 | Brand | **NeverDown** |
 | C0 scaffold | **Done** |
-| C1–C10 | Not started |
+| C1 x402 seller | **Done + tested** (22/22 unit tests) |
+| C2 x402 pay-once | **Code done** — set `HEDERA_SPEND_ID`/`KEY`, then `pnpm pay:once` ([docs/C2-PAY-ONCE.md](docs/C2-PAY-ONCE.md)) |
+| C3–C10 | Not started |
 | Git remote | `https://github.com/dhanushonchain/NeverDown.git` |
 
 Built for **ETHGlobal Mumbai 2026**.
