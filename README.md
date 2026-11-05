@@ -228,8 +228,9 @@ Fill `.env` before C1/C2 (Hedera, facilitator, later Arkiv/ENS). **Never commit 
 | Brand | **NeverDown** |
 | C0 scaffold | **Done** |
 | C1 x402 seller | **Done + tested** (22/22 unit tests) |
-| C2 x402 pay-once | **Code done** — set `HEDERA_SPEND_ID`/`KEY`, then `pnpm pay:once` ([docs/C2-PAY-ONCE.md](docs/C2-PAY-ONCE.md)) |
-| C3–C10 | Not started |
+| C2 x402 pay-once | **Done + live HashScan settle** ([docs/C2-PAY-ONCE.md](docs/C2-PAY-ONCE.md)) |
+| C3 PolicyEngine + HCS | In progress |
+| C4–C10 | Not started |
 | Git remote | `https://github.com/dhanushonchain/NeverDown.git` |
 | Maintainer | [ujjwaldubey1](https://github.com/ujjwaldubey1) |
 
