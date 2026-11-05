@@ -1,0 +1,21 @@
+{
+  "name": "@neverdown/core",
+  "private": true,
+  "version": "0.0.0",
+  "description": "NeverDown policy, agent, Arkiv, ENS, x402, HCS, PoC (C2–C8)",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "echo \"@neverdown/core: scaffold only (C0)\"",
+    "dev": "echo \"@neverdown/core: scaffold only (C0)\"",
+    "lint": "echo \"ok\"",
+    "typecheck": "echo \"ok\""
+  }
+}

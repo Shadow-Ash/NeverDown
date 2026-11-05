@@ -1,0 +1,13 @@
+{
+  "name": "@neverdown/gateway",
+  "private": true,
+  "version": "0.0.0",
+  "description": "NeverDown fast recovery plane — RPC gateway (C4)",
+  "type": "module",
+  "scripts": {
+    "dev": "echo \"@neverdown/gateway: scaffold only (C0) — implement in C4\"",
+    "build": "echo \"@neverdown/gateway: scaffold only (C0)\"",
+    "lint": "echo \"ok\"",
+    "typecheck": "echo \"ok\""
+  }
+}

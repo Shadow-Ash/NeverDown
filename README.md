@@ -1,12 +1,12 @@
-# TraceVault
+# NeverDown
 
 ### The Autonomous Resilience Operator for Web3
 
 **ETHGlobal Mumbai 2026**
 
-> TraceVault is a B2B operations platform that keeps Web3 applications resilient through continuous dependency monitoring, evidence-based incident investigation, policy-controlled service procurement, and automated recovery.
+> NeverDown is a B2B operations platform that keeps Web3 applications resilient through continuous dependency monitoring, evidence-based incident investigation, policy-controlled service procurement, and automated recovery.
 
-Companies define **what must stay operational**, **what the agent is allowed to change**, and **how much it can spend**. TraceVault prepares for failures, recovers from eligible incidents, purchases additional capabilities when needed, and produces **verifiable evidence** of every decision.
+Companies define **what must stay operational**, **what the agent is allowed to change**, and **how much it can spend**. NeverDown prepares for failures, recovers from eligible incidents, purchases additional capabilities when needed, and produces **verifiable evidence** of every decision.
 
 It is **not** “an AI chatbot that tries to fix things.”  
 It is **programmable application resilience** with vendor-independent purchasing and bounded autonomy.
@@ -15,7 +15,7 @@ It is **programmable application resilience** with vendor-independent purchasing
 
 ## One-liner for judges
 
-> When existing providers can’t supply what you need, TraceVault discovers, verifies, purchases, and activates a replacement — under an enforceable resilience policy — and proves every step.
+> When existing providers can’t supply what you need, NeverDown discovers, verifies, purchases, and activates a replacement — under an enforceable resilience policy — and proves every step.
 
 ---
 
@@ -30,9 +30,9 @@ Small DeFi / wallet / infrastructure teams cannot staff 24/7 ops. At 3 AM:
 
 Ordinary monitoring alerts a human. Ordinary gateways fail over to **preconfigured** backups. AI-SRE tools (Rootly, incident.io, etc.) investigate and guide remediation.
 
-**TraceVault’s wedge:** when preconfigured capacity is exhausted or missing, the Supreme Agent **procures** a verified replacement via an open marketplace (Arkiv + Hedera x402), within spend and action limits, then replenishes standby capacity — and anchors evidence.
+**NeverDown’s wedge:** when preconfigured capacity is exhausted or missing, the Supreme Agent **procures** a verified replacement via an open marketplace (Arkiv + Hedera x402), within spend and action limits, then replenishes standby capacity — and anchors evidence.
 
-| Capability | Existing solutions | TraceVault opportunity |
+| Capability | Existing solutions | NeverDown opportunity |
 |---|---|---|
 | Incident investigation | AI-SRE tools | Web3 evidence + paid specialist tools |
 | RPC failover | RPC gateways (e.g. dRPC) | Autonomous **purchase + replenishment** of capacity |
@@ -68,11 +68,11 @@ If recovery fails → rollback where possible or escalate to a human.
 
 ### 1. Resilience Contracts (programmable resilience policy)
 
-Machine-enforceable operating agreements between the business and TraceVault — **not** necessarily on-chain smart contracts.
+Machine-enforceable operating agreements between the business and NeverDown — **not** necessarily on-chain smart contracts.
 
 Example settings:
 
-- Availability **objective** (e.g. 99.9% — a target, not a TraceVault guarantee)  
+- Availability **objective** (e.g. 99.9% — a target, not a NeverDown guarantee)  
 - Emergency service-purchase **budget** (e.g. `$25`)  
 - Permit automated switching among **preapproved** providers  
 - Never use unverified chain / endpoint  
@@ -87,7 +87,7 @@ Customer proposition: *restore service within explicit ops, money, and security 
 Onboarding starts with an **Infrastructure Discovery Audit** (manifest-first for the hackathon):
 
 - Connect repo / deploy config / service manifest  
-- TraceVault maps critical deps (RPC, indexer, oracle, AI API, …)  
+- NeverDown maps critical deps (RPC, indexer, oracle, AI API, …)  
 - Owner verifies and authorizes them  
 
 Impact-aware recovery:
@@ -106,7 +106,7 @@ Applications cannot wait for LLM + marketplace + payment on every outage.
 | **Fast Recovery Plane** | Deterministic gateway switches to a **pretested, preauthorized** standby when health checks fail | No LLM, no blockchain tx on the request path |
 | **Autonomous Procurement Plane** | Supreme Agent investigates, discovers capacity on Arkiv, Proof-of-Capability tests, pays via Hedera x402, installs a **new standby** | Restores redundancy for the *next* outage |
 
-**Key judge line:** TraceVault does not need the AI to be fast enough to save every RPC call. The AI makes the app more resilient by **replenishing** capabilities after failure. That separates automatic routing from autonomous **service acquisition**.
+**Key judge line:** NeverDown does not need the AI to be fast enough to save every RPC call. The AI makes the app more resilient by **replenishing** capabilities after failure. That separates automatic routing from autonomous **service acquisition**.
 
 ### 4. Guardian Drills (chaos-to-recovery)
 
@@ -162,7 +162,7 @@ Every autonomous action yields a structured **Recovery Evidence Receipt**, HCS-a
 - Post-action verification results  
 - Signed / hashed record  
 
-Independently checkable: signatures, policy version, HashScan settlement, evidence hashes — without trusting the TraceVault UI.
+Independently checkable: signatures, policy version, HashScan settlement, evidence hashes — without trusting the NeverDown UI.
 
 **Honesty bound:** a receipt proves those observations/decisions were recorded; it does **not** prove global health for every user or that nothing unlogged occurred. Separate agent claims from independently verified facts.
 
@@ -233,7 +233,7 @@ flowchart TB
   Hedera --> Evidence
 ```
 
-**Invariant:** if AI, Arkiv, or Hedera is down, the **data plane keeps serving** last-known-good routes. TraceVault must not become the single point of failure it was built to eliminate.
+**Invariant:** if AI, Arkiv, or Hedera is down, the **data plane keeps serving** last-known-good routes. NeverDown must not become the single point of failure it was built to eliminate.
 
 ---
 
@@ -258,7 +258,7 @@ flowchart TB
 
 ## Prize stack (ETHGlobal Mumbai)
 
-| Sponsor | Track | Role in TraceVault |
+| Sponsor | Track | Role in NeverDown |
 |---|---|---|
 | **[Hedera](https://ethglobal.com/events/mumbai/prizes/hedera)** | AI Agents That Pay: x402 | Buy replacement RPC / intel; HCS evidence; HashScan proof |
 | **[Arkiv](https://ethglobal.com/events/mumbai/prizes/arkiv)** | Build on Arkiv | Wallet-owned, expiring **capability** offers the agent queries |
@@ -277,13 +277,13 @@ Payment security path for MVP:
 
 Long-term vision is large. The submission is one sharp demo:
 
-### TraceVault: The Self-Healing RPC Gateway
+### NeverDown: The Self-Healing RPC Gateway
 
 One app · three providers · one Supreme Agent · one Resilience Contract.
 
 #### Five-act live demo
 
-1. **Healthy** — Demo dApp makes Ethereum testnet RPC calls through TraceVault gateway  
+1. **Healthy** — Demo dApp makes Ethereum testnet RPC calls through NeverDown gateway  
 2. **Primary fails** — Inject outage → **preapproved fallback** restores service automatically (fast plane)  
 3. **Agent replenishes** — Discovers eligible replacement on **Arkiv**, Proof-of-Capability, real **Hedera x402** purchase, installs as new standby  
 4. **Attack / abuse** — Malicious listing redirects `payTo` or exceeds budget → **policy refuses** before sign  
@@ -356,7 +356,7 @@ flowchart LR
 ### Planned repo layout
 
 ```
-TraceVault/
+NeverDown/
   README.md
   apps/web/              # B2B console — policy, graph, incidents, evidence
   apps/gateway/          # Fast Recovery Plane
@@ -368,7 +368,7 @@ TraceVault/
 
 ---
 
-## What TraceVault is not
+## What NeverDown is not
 
 - Not a generic agent marketplace  
 - Not “AI invents wallet risk” without chain evidence  
@@ -381,7 +381,7 @@ TraceVault/
 
 ## Positioning
 
-**TraceVault — The Autonomous Resilience Operator for Web3.**
+**NeverDown — The Autonomous Resilience Operator for Web3.**
 
 An always-on operator that monitors dApp dependencies, investigates incidents, autonomously purchases verified replacement capacity, executes authorized recovery, and publishes independently checkable evidence — without unlimited spending or production privileges.
 
@@ -392,7 +392,30 @@ Then wallet investigation, Guardian Drills, and further modules attach to the sa
 
 ## Status
 
-Product vision and architecture locked as **TraceVault 2.0**.  
+Product vision and architecture locked as **NeverDown**.  
 Hackathon MVP: **Self-Healing RPC Gateway** five-act demo.
+
+**Build progress**
+
+| Chunk | Status |
+|---|---|
+| **C0** monorepo scaffold | Done |
+| C1–C10 | Not started |
+
+**Monorepo**
+
+```
+neverdown/
+  apps/web/          # console (C9)
+  apps/gateway/      # fast recovery plane (C4)
+  apps/sellers/      # x402 merchant (C1)
+  packages/core/     # policy, agent, rails (C2–C8)
+  docs/              # architecture diagrams
+  arkiv/             # judge docs (C5 / C10)
+```
+
+```bash
+pnpm install   # C0 gate
+```
 
 Built for **ETHGlobal Mumbai 2026**.

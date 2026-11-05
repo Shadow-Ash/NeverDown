@@ -1,0 +1,13 @@
+{
+  "name": "@neverdown/sellers",
+  "private": true,
+  "version": "0.0.0",
+  "description": "NeverDown x402 RPC merchant (C1)",
+  "type": "module",
+  "scripts": {
+    "dev": "echo \"@neverdown/sellers: scaffold only (C0) — implement in C1\"",
+    "build": "echo \"@neverdown/sellers: scaffold only (C0)\"",
+    "lint": "echo \"ok\"",
+    "typecheck": "echo \"ok\""
+  }
+}

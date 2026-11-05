@@ -1,0 +1,12 @@
+{
+  "name": "@neverdown/web",
+  "private": true,
+  "version": "0.0.0",
+  "description": "NeverDown console + demo dApp UI (C9)",
+  "scripts": {
+    "dev": "echo \"@neverdown/web: scaffold only (C0) — implement in C9\"",
+    "build": "echo \"@neverdown/web: scaffold only (C0)\"",
+    "lint": "echo \"ok\"",
+    "typecheck": "echo \"ok\""
+  }
+}
