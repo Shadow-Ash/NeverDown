@@ -1,68 +1,185 @@
 # TraceVault
 
-**ETHGlobal Mumbai 2026** — AI wallet-investigation agent that buys paid data tools on its own, inside a hard spend limit and an allowlist of sellers.
+### The Autonomous Resilience Operator for Web3
 
-> Our agent finds paid investigation tools without a centralized directory, pays autonomously, does useful work, and a stolen key still can’t drain the budget or pay an unapproved seller.
+**ETHGlobal Mumbai 2026**
+
+> TraceVault is a B2B operations platform that keeps Web3 applications resilient through continuous dependency monitoring, evidence-based incident investigation, policy-controlled service procurement, and automated recovery.
+
+Companies define **what must stay operational**, **what the agent is allowed to change**, and **how much it can spend**. TraceVault prepares for failures, recovers from eligible incidents, purchases additional capabilities when needed, and produces **verifiable evidence** of every decision.
+
+It is **not** “an AI chatbot that tries to fix things.”  
+It is **programmable application resilience** with vendor-independent purchasing and bounded autonomy.
 
 ---
 
-## What it is (simple)
+## One-liner for judges
 
-TraceVault is a private-investigator agent for suspicious wallets.
+> When existing providers can’t supply what you need, TraceVault discovers, verifies, purchases, and activates a replacement — under an enforceable resilience policy — and proves every step.
 
-1. You paste a **suspicious address**
-2. You set a **spend cap** (e.g. `$0.50`)
-3. You set an **allowlist** of approved sellers (ENS names)
-4. The agent finds tools on **Arkiv**, pays with **Hedera x402**, gathers evidence, writes a short report
-5. If it tries an unapproved seller or goes over budget → payment is **refused** and the deny is logged on **HCS**
+---
 
-Most demos only show one half:
+## What problem this solves
 
-| Typical demo | What it proves | What it misses |
+Small DeFi / wallet / infrastructure teams cannot staff 24/7 ops. At 3 AM:
+
+- Primary RPC stops responding  
+- Indexer falls behind  
+- Price API dies  
+- Unusual treasury activity appears  
+
+Ordinary monitoring alerts a human. Ordinary gateways fail over to **preconfigured** backups. AI-SRE tools (Rootly, incident.io, etc.) investigate and guide remediation.
+
+**TraceVault’s wedge:** when preconfigured capacity is exhausted or missing, the Supreme Agent **procures** a verified replacement via an open marketplace (Arkiv + Hedera x402), within spend and action limits, then replenishes standby capacity — and anchors evidence.
+
+| Capability | Existing solutions | TraceVault opportunity |
 |---|---|---|
-| Agent marketplace (AgentPay / Agent Bazaar) | Agent bought a tool | Agent couldn’t steal |
-| Budget vault (Capability Descent) | Spend is limited | No useful investigation job |
+| Incident investigation | AI-SRE tools | Web3 evidence + paid specialist tools |
+| RPC failover | RPC gateways (e.g. dRPC) | Autonomous **purchase + replenishment** of capacity |
+| Spending limits | Agent-wallet products | Unified **payment + operational** permissions |
+| Resilience testing | Chaos engineering | Integrated with recovery **and** procurement |
+| Verifiable records | Ops logs | Cross-vendor signed policy + settlement evidence |
 
-**TraceVault fixes both:** a real investigation task **plus** a refuse path with on-chain deny proof.
-
----
-
-## What it is not
-
-- Not a general agent marketplace
-- Not `transferExecutor` / contract settlement (cryptoTransfer x402 only for v1)
-- Not World-first / Worldcoin
-- Not an LLM inventing wallet risk — uses **Hedera Mirror Node** data and deterministic paid stubs
+None of those pieces alone is novel. The product is the **full vendor-independent resilience lifecycle**.
 
 ---
 
-## Prize stack (ETHGlobal Mumbai)
+## Product definition
 
-| Sponsor | Target bounty | Role in TraceVault |
+### What customers buy
+
+Not “an AI agent.”  
+A system that understands critical dependencies and is **authorized to restore service** inside explicit operational, financial, and security boundaries.
+
+### Three jobs
+
+| Job | Meaning |
+|---|---|
+| **MONITOR** | Know when something critical is wrong |
+| **INVESTIGATE** | Understand impact; buy specialist data if useful; return evidence + plan |
+| **RECOVER** | Switch / activate / procure under policy; verify; audit; escalate if needed |
+
+Loop: **Detect → Diagnose → Decide → Procure → Act → Verify → Audit**  
+If recovery fails → rollback where possible or escalate to a human.
+
+---
+
+## Breakthrough features
+
+### 1. Resilience Contracts (programmable resilience policy)
+
+Machine-enforceable operating agreements between the business and TraceVault — **not** necessarily on-chain smart contracts.
+
+Example settings:
+
+- Availability **objective** (e.g. 99.9% — a target, not a TraceVault guarantee)  
+- Emergency service-purchase **budget** (e.g. `$25`)  
+- Permit automated switching among **preapproved** providers  
+- Never use unverified chain / endpoint  
+- Never expose treasury signing keys to the AI  
+- Require approval for irreversible production actions  
+- Record every procurement and recovery decision  
+
+Customer proposition: *restore service within explicit ops, money, and security bounds.*
+
+### 2. Application Dependency Graph
+
+Onboarding starts with an **Infrastructure Discovery Audit** (manifest-first for the hackathon):
+
+- Connect repo / deploy config / service manifest  
+- TraceVault maps critical deps (RPC, indexer, oracle, AI API, …)  
+- Owner verifies and authorizes them  
+
+Impact-aware recovery:
+
+- Failed analytics API ≠ production-wide emergency  
+- Failed settlement dependency = critical  
+
+Hackathon scope: **simple manifest → graph → active probes**. No full production autodiscovery.
+
+### 3. Recovery before procurement (two planes)
+
+Applications cannot wait for LLM + marketplace + payment on every outage.
+
+| Plane | What it does | Latency path |
 |---|---|---|
-| **[Hedera](https://ethglobal.com/events/mumbai/prizes/hedera)** | AI Agents That Pay: x402 on Hedera ($6,500) | Money movement + audit log |
-| **[Arkiv](https://ethglobal.com/events/mumbai/prizes/arkiv)** | Build on Arkiv from scratch ($4,000) | Decentralized tool discovery |
-| **[ENS](https://ethglobal.com/events/mumbai/prizes/ens)** | Best Use of ENSv2 ($7,000) | Seller / agent identity + allowlist |
+| **Fast Recovery Plane** | Deterministic gateway switches to a **pretested, preauthorized** standby when health checks fail | No LLM, no blockchain tx on the request path |
+| **Autonomous Procurement Plane** | Supreme Agent investigates, discovers capacity on Arkiv, Proof-of-Capability tests, pays via Hedera x402, installs a **new standby** | Restores redundancy for the *next* outage |
 
-Secondary Hedera shot (same app): **No Solidity Allowed** — native SDK services only (HCS + accounts), no smart contracts.
+**Key judge line:** TraceVault does not need the AI to be fast enough to save every RPC call. The AI makes the app more resilient by **replenishing** capabilities after failure. That separates automatic routing from autonomous **service acquisition**.
 
-We intentionally **do not** target Arc or 0G for this build (see [Why not Arc / 0G](#why-not-arc--0g)).
+### 4. Guardian Drills (chaos-to-recovery)
 
----
+Staging-only resilience tests before production breaks.
 
-## Who handles what (and why)
+Simulate (examples): RPC 503, stale blocks, indexer lag, feed disagreement, bad API payloads, x402 price change, merchant down, over-cap purchase attempt.
 
-| Part | Job | Why it is needed |
+Measure: detection time, switch time, total recovery, unauthorized purchase refused — against the Resilience Contract.
+
+**Production fault injection requires separate authorization.** Hackathon: staging / simulated drills only.
+
+### 5. Recovery Capability Marketplace (not a generic agent bazaar)
+
+Arkiv listings are **operational capabilities**, machine-purchasable:
+
+| Capability | Example purchase | When useful |
 |---|---|---|
-| **Dashboard (UI)** | Start job; show report + proofs | Human sets rules; judges see HashScan / Arkiv / ENS / HCS evidence |
-| **Investigation Agent** | Picks tools, buys under policy, writes report | Does the useful work |
-| **ENS (ENSv2)** | Resolves seller/agent names; allowlist identity | “Approved seller” is a real name + records, not a hardcoded string |
-| **Arkiv** | Expiring, wallet-owned Offer entities | Find tools without a centralized directory |
-| **PolicyGate** | Allowlist OK? Under budget? Sign or refuse | Core safety — compromised agent still can’t freely spend |
-| **Hedera x402** | Settles payment when gate says yes | Autonomous pay-per-call for investigation tools |
-| **HCS** | Immutable `PAY` / `DENY` messages | Proof of settle **and** proof of refuse |
-| **Seller APIs** | HTTP 402 → pay → return data | Real (or deterministic stub) paid tools |
-| **Mirror Node** | Free on-chain tx / token facts | Report uses chain data, not LLM guesses |
+| RPC access | Temporary JSON-RPC package | Primary capacity exhausted |
+| Indexing | Historical event retrieval | Lag / gaps |
+| Tx simulation | Simulate suspicious tx | Incident investigation |
+| Wallet intelligence | Counterparties / token flows | Treasury threat |
+| Contract analysis | Static analysis | Dangerous contracts |
+| AI inference | Extra model calls | Complex classification |
+| Log analysis | On-demand diagnostics | Unclear failures |
+
+Offer metadata (beyond price): seller identity, payTo, chains/methods, expiry, rate limits, compatibility, test/conformance profile, seller-signed metadata.
+
+**Arkiv** = discovery. **Hedera** = settlement.  
+Listings are not trust: anyone can publish entities — see Proof-of-Capability.
+
+### 6. Proof-of-Capability
+
+Before activating an unfamiliar provider (RPC example):
+
+1. Confirm chain ID  
+2. Compare block height vs independent source  
+3. Probe required JSON-RPC methods  
+4. Check error behavior / consistency  
+5. Measure latency  
+6. Confirm x402 `payTo` matches approved seller  
+7. Activate only if required tests pass  
+
+Select on **current capability**, not reputation alone.
+
+### 7. Evidence Ledger
+
+Every autonomous action yields a structured **Recovery Evidence Receipt**, HCS-anchored:
+
+- Incident id + detection evidence  
+- Decision + policy version  
+- Authorization outcome  
+- Hedera settlement tx (if any)  
+- Post-action verification results  
+- Signed / hashed record  
+
+Independently checkable: signatures, policy version, HashScan settlement, evidence hashes — without trusting the TraceVault UI.
+
+**Honesty bound:** a receipt proves those observations/decisions were recorded; it does **not** prove global health for every user or that nothing unlogged occurred. Separate agent claims from independently verified facts.
+
+### 8. Bounded Autonomy (enterprise-safe)
+
+| Level | Examples | Execution |
+|---|---|---|
+| **Observe** | Logs, code inspect, wallet analysis | Automatic |
+| **Recover** | Switch approved RPC routes, buy bounded API packs, activate verified backups | Automatic under policy |
+| **Privileged** | Pause contracts, revoke permissions, deploy, move treasury | Human / governance only |
+
+Two security boundaries (both required):
+
+1. **Financial** — no over-budget / off-allowlist payments  
+2. **Operational** — no unauthorized infra changes, credential leaks, or unsafe actions  
+
+Perfect payment limits do **not** protect against unrestricted K8s/cloud credentials. Policy covers **both** payment and infrastructure permissions from day one.
 
 ---
 
@@ -70,289 +187,212 @@ We intentionally **do not** target Arc or 0G for this build (see [Why not Arc / 
 
 ```mermaid
 flowchart TB
-  subgraph UI["Dashboard"]
-    Form["Paste address + cap + ENS allowlist"]
-    Proof["HashScan · Arkiv offer · ENS · Report · Deny"]
+  subgraph Customer["B2B customer application"]
+    App["DeFi · Wallet · Infra · Web3 SaaS"]
   end
 
-  subgraph ORCH["Job Orchestrator"]
-    Job["Create job · fund spend wallet with cap · open HCS topic"]
+  subgraph Graph["Dependency Graph + Resilience Contract"]
+    Deps["Critical services map"]
+    Policy["Spending · sellers · actions · approvals"]
   end
 
-  subgraph AGENT["Investigation Agent"]
-    Plan["Plan tools needed"]
-    Discover["discover_offers"]
-    Buy["request_purchase"]
-    Report["write_report"]
+  subgraph DataPlane["Fast Recovery Plane — data plane"]
+    GW["Self-healing gateway\nhealth checks · standby switch · rollback"]
   end
 
-  subgraph GATE["PolicyGate — hard control plane"]
-    Check{"seller ENS allowlisted\nAND price ≤ remaining?"}
-    Sign["Sign x402 TransferTransaction"]
-    Deny["Refuse — no settle"]
+  subgraph ControlPlane["Autonomous Procurement Plane — control plane"]
+    Mon["Health monitors"]
+    Agent["Supreme Agent\ndiagnose · plan · procure · investigate · verify · escalate"]
+    PoC["Proof-of-Capability"]
+    Exec["Recovery executor"]
+    Evidence["Evidence engine"]
   end
 
-  subgraph EXT["External rails"]
-    ENS["ENSv2 — names + text records"]
-    Arkiv["Arkiv — Offer entities"]
-    X402["x402 Facilitator verify/settle"]
-    Sellers["Seller APIs — 402 → data"]
-    Mirror["Hedera Mirror Node"]
-    HCS["HCS topic — PAY / DENY"]
-    HashScan["HashScan"]
+  subgraph Rails["Rails"]
+    Arkiv["Arkiv — capability offers"]
+    Hedera["Hedera — x402 + HCS"]
+    OG["0G — optional inference"]
+    Sellers["x402 merchants"]
   end
 
-  Form --> Job --> AGENT
-  Discover --> Arkiv
-  Buy --> ENS
-  Buy --> Check
-  Check -->|yes| Sign --> X402 --> Sellers
-  Check -->|no| Deny --> HCS
-  Sign --> HCS
-  Sellers --> Report
-  Mirror --> Report
-  Report --> Proof
-  HCS --> Proof
-  X402 --> HashScan --> Proof
-  Arkiv --> Proof
-  ENS --> Proof
+  App --> GW
+  Deps --> Mon
+  Policy --> Agent
+  GW -->|"health fail"| Mon
+  Mon --> Agent
+  Agent --> OG
+  Agent --> PoC
+  Agent --> Arkiv
+  Agent --> Policy
+  Policy -->|"approve"| Hedera
+  Policy -->|"deny"| Hedera
+  Hedera --> Sellers
+  PoC --> Exec
+  Exec -->|"update standby / route"| GW
+  Agent --> Evidence
+  Hedera --> Evidence
 ```
 
-### Trust model
+**Invariant:** if AI, Arkiv, or Hedera is down, the **data plane keeps serving** last-known-good routes. TraceVault must not become the single point of failure it was built to eliminate.
 
-With `cryptoTransfer` (not `transferExecutor`), a raw stolen private key can always drain an account. TraceVault uses **two layers**:
+---
 
-1. **Hard:** spend wallet is funded with **exactly the job cap** at start → max loss = cap  
-2. **Product:** LLM never holds the spend key; it only calls `request_purchase` → **PolicyGate** signs or refuses → off-allowlist / over-cap = **DENY on HCS before settle**
+## Who handles what
 
-Invariant: spend private key lives only inside PolicyGate process memory / env — never in LLM context or the browser.
+| Component | Responsibility |
+|---|---|
+| **Customer console** | Resilience Contract, dependency graph, budgets, allowlists, evidence UI |
+| **Dependency Graph** | What is critical; impact of each failure |
+| **Fast Recovery Plane (gateway)** | Instant switch to preapproved standby |
+| **Supreme Agent** | Diagnose, plan, procure, investigate, verify, escalate |
+| **Policy / Permission layer** | Enforce spend + allowed sellers + allowed actions |
+| **Arkiv** | Time-limited, wallet-owned capability offers |
+| **Hedera x402** | Autonomous settlement for purchased capacity / intel |
+| **HCS** | Ordered, tamper-evident PAY / DENY / decision anchors |
+| **0G Private Computer** | Optional inference for plan selection + explanations (request IDs) |
+| **Proof-of-Capability** | Live verify before activate |
+| **Evidence Engine** | Signed receipts + dashboard + independent verify path |
+| **Recovery Executor** | Safe switch / rollback only for authorized targets |
+
+---
+
+## Prize stack (ETHGlobal Mumbai)
+
+| Sponsor | Track | Role in TraceVault |
+|---|---|---|
+| **[Hedera](https://ethglobal.com/events/mumbai/prizes/hedera)** | AI Agents That Pay: x402 | Buy replacement RPC / intel; HCS evidence; HashScan proof |
+| **[Arkiv](https://ethglobal.com/events/mumbai/prizes/arkiv)** | Build on Arkiv | Wallet-owned, expiring **capability** offers the agent queries |
+| **[0G](https://ethglobal.com/events/mumbai/prizes)** | Private Computer | Incident reasoning + explanations with real request IDs |
+
+Payment security path for MVP:
+
+- **Hackathon-fast:** isolated signer, server-side policy, cap-funded wallet, `cryptoTransfer`  
+- **Stronger later:** `transferExecutor` spend policies (if facilitator supports)  
+
+**Do not claim** an unrestricted stolen payer key cannot spend its funds. Production claims must match cryptographic enforcement.
+
+---
+
+## Hackathon build: Self-Healing RPC Gateway
+
+Long-term vision is large. The submission is one sharp demo:
+
+### TraceVault: The Self-Healing RPC Gateway
+
+One app · three providers · one Supreme Agent · one Resilience Contract.
+
+#### Five-act live demo
+
+1. **Healthy** — Demo dApp makes Ethereum testnet RPC calls through TraceVault gateway  
+2. **Primary fails** — Inject outage → **preapproved fallback** restores service automatically (fast plane)  
+3. **Agent replenishes** — Discovers eligible replacement on **Arkiv**, Proof-of-Capability, real **Hedera x402** purchase, installs as new standby  
+4. **Attack / abuse** — Malicious listing redirects `payTo` or exceeds budget → **policy refuses** before sign  
+5. **Proof** — Dashboard: recovery metrics, provider tests, HashScan tx, Arkiv entity, HCS-anchored receipts  
+
+We run our own x402 RPC merchant to demonstrate the market mechanism — not claim a mature public x402 RPC marketplace already exists.
+
+#### Stretch (in order)
+
+1. Wallet investigation via purchased chain-data tools  
+2. Staging-only Guardian Drill  
+3. Defer generalized contract auditing until real analyzers exist  
+
+#### Failure tests before recording the demo
+
+1. Stale-but-responsive RPC  
+2. Invalid chain ID  
+3. Concurrent purchases that jointly exceed budget  
+4. Hedera / Arkiv control plane unavailable (data plane still serves)  
 
 ---
 
 ## Flowcharts
 
-### Happy path vs compromised path
+### Fast recovery vs procurement
 
 ```mermaid
 flowchart TD
-  Start["User: address + $0.50 cap + ENS sellers A,B"] --> Fund["Fund spend wallet = cap\nCreate job + HCS topic"]
-  Fund --> Query["Agent queries Arkiv\nactive + non-expired offers"]
-  Query --> Resolve["Resolve seller ENS names + text records"]
-  Resolve --> Gate{"PolicyGate"}
-
-  Gate -->|"ENS allowlisted · under cap"| Pay["Sign x402 cryptoTransfer\nFacilitator settles"]
-  Pay --> Data["Seller returns investigation data"]
-  Data --> Evidence["Report from Mirror + paid payloads"]
-  Evidence --> LogPay["HCS: PAY"]
-  LogPay --> Dash["Dashboard: settlement + offer + ENS + report"]
-
-  Gate -->|"unapproved ENS or over cap"| Ref["Refuse — no payload signed"]
-  Ref --> LogDeny["HCS: DENY"]
-  LogDeny --> Dash2["Dashboard: deny proof — no HashScan settle"]
+  Fail["Primary health check fails"] --> Fast{"Preapproved standby healthy?"}
+  Fast -->|yes| Switch["Gateway switches immediately\nno LLM · no x402"]
+  Switch --> Serve["App keeps serving"]
+  Fast -->|no| Alert["Mark degraded · escalate if no standby"]
+  Serve --> Procure["Supreme Agent: investigate + Arkiv discover"]
+  Alert --> Procure
+  Procure --> PoC["Proof-of-Capability"]
+  PoC --> Gate{"Policy: seller + budget + action OK?"}
+  Gate -->|yes| Pay["Hedera x402 settle"]
+  Pay --> Install["Install as new standby"]
+  Gate -->|no| Deny["Refuse · HCS DENY"]
+  Install --> Evidence["Evidence receipt + HCS"]
+  Deny --> Evidence
 ```
 
-### Rail responsibilities
+### Bounded autonomy
 
 ```mermaid
 flowchart LR
-  User["User: address + cap + ENS allowlist"] --> Agent["TraceVault agent"]
-  Agent --> ENS["ENSv2 resolve names"]
-  Agent --> Arkiv["Arkiv Offer entities"]
-  Agent --> Gate["PolicyGate"]
-  ENS -->|"name allowed + records OK"| Gate
-  Arkiv -->|"price + serviceUrl"| Gate
-  Gate -->|"approve"| Pay["Hedera x402"]
-  Gate -->|"deny"| HCS["HCS DENY"]
-  Pay --> HCS2["HCS PAY"]
-  Pay --> Data["Seller data"]
-  Data --> Report["Evidence report"]
-```
-
-| Concern | Rail |
-|---|---|
-| Who may be paid | **ENS** allowlist + resolved records |
-| What tools exist | **Arkiv** expiring offers |
-| How money moves | **Hedera** x402 + HCS pay/deny |
-| What the job finds | Mirror Node + paid seller payloads |
-
----
-
-## Sponsor tracks — what each one does in TraceVault
-
-### 1. Hedera — money + audit
-
-**Bounty:** [AI Agents That Pay: x402 on Hedera](https://ethglobal.com/events/mumbai/prizes/hedera)
-
-| Piece | What we use it for |
-|---|---|
-| **x402 exact / `cryptoTransfer`** | Agent pays sellers autonomously inside HTTP 402 flow (HBAR / HTS) |
-| **Facilitator** | Verifies + settles; pays network fees (`feePayer`) |
-| **HCS topic** | Tamper-evident log of every `PAY` and `DENY` |
-| **Mirror Node** | Real wallet tx / token facts for the evidence report |
-| **HashScan** | Judge-facing settlement links |
-
-**Why Hedera fits:** their idea list literally includes a budgeted research agent, spending controls (budgets, allowlists), and HCS as an audit log — TraceVault is that product.
-
-**Extra / secondary:** SDK-only path (no Solidity) also qualifies for **No Solidity Allowed** if we keep payments + HCS native.
-
----
-
-### 2. Arkiv — discovery without a directory
-
-**Bounty:** [Build on Arkiv (from scratch)](https://ethglobal.com/events/mumbai/prizes/arkiv)
-
-| Piece | What we use it for |
-|---|---|
-| **Offer entities** | Wallet-owned listings for investigation tools |
-| **SQL-like queries** | Agent finds active, non-expired offers by category |
-| **Entity expiry** | Stale offers disappear — no central delist UI |
-| **Explorer** | Dashboard links to the offer entity used |
-
-**Offer fields (planned):**
-
-| Field | Purpose |
-|---|---|
-| `sellerAccountId` / Arkiv owner | Must match ENS-resolved seller |
-| `serviceUrl` | x402 resource endpoint |
-| `priceTinybars` | Cap check |
-| `category` | `tx_history` \| `token_risk` \| `counterparties` |
-| `expiresAt` / TTL | Native Arkiv expiry |
-
-Hackathon docs we will ship: `/arkiv/schema.md`, `/arkiv/friction.md`.
-
----
-
-### 3. ENS — identity + allowlist
-
-**Bounty:** [Best Use of ENSv2](https://ethglobal.com/events/mumbai/prizes/ens)
-
-| Piece | What we use it for |
-|---|---|
-| **ENSv2 names / subnames** | Human-readable sellers + agent identity |
-| **Text records** | Map name → Hedera account, Arkiv owner, `x402Url`, category |
-| **Enhanced Access Control** | Who can edit allowlist / agent records |
-| **Permissioned Resolver** | Sellers own their subname data |
-| **Agent text records (ENSIP-26)** | Agent-as-namespace identity |
-
-**Must not be cosmetic:** PolicyGate resolves live ENS and **fail-closes** if the name is off-allowlist or required records are missing.
-
-Demo line: *Allowlist is identity, not a hardcoded string list — if the name isn’t approved, PolicyGate refuses before x402 settle.*
-
----
-
-### Why not Arc / 0G
-
-| Sponsor | Why we skip for TraceVault |
-|---|---|
-| **Arc** | Closest bounty wants Circle Discovery API + USDC on Arc + Arc Studio as starting point — a second marketplace and payment rail that fights Hedera + Arkiv |
-| **0G** | Consumer AI / robots / “earn for 0G Compute” loops don’t match a one-shot investigation job; would dilute the x402 + PolicyGate story |
-
-Depth on **three coherent rails** beats shallow multi-sponsor stitching.
-
----
-
-## PolicyGate (single choke point)
-
-```
-remaining = job.cap - sum(successful PAY amounts)
-if seller ENS ∉ allowlist (or records fail) → DENY(OFF_ALLOWLIST) → HCS → return
-if offer.price > remaining → DENY(OVER_CAP) → HCS → return
-if offer expired / missing on Arkiv → DENY(STALE_OFFER) → HCS → return
-build PaymentRequirements from seller 402
-sign with spend key via @x402/hedera ExactHederaScheme (cryptoTransfer)
-facilitator verify + settle
-on success: remaining -= price; HCS PAY; return data to agent
+  Agent["Supreme Agent proposes action"] --> Pol["Policy engine"]
+  Pol -->|"Observe"| Auto1["Execute"]
+  Pol -->|"Recover + authorized"| Auto2["Execute + evidence"]
+  Pol -->|"Privileged"| Human["Human / governance"]
+  Pol -->|"Over budget / bad seller / bad target"| Block["Deny + HCS"]
 ```
 
 ---
 
-## Agent tools (minimal surface)
+## Planned stack
 
-1. `discover_offers(category?)` → Arkiv  
-2. `request_purchase(offerId)` → **only** entry to PolicyGate → ENS check → x402  
-3. `get_mirror_activity(address)` → Mirror Node (free, real)  
-4. `write_report()` → structured evidence from paid + mirror facts  
-5. `force_bad_purchase(...)` *(demo-only)* → triggers DENY path for judges  
+| Layer | Choice |
+|---|---|
+| Console | Next.js |
+| Gateway (data plane) | Node proxy — health, routes, rollback |
+| Agent | Tool loop; optional **0G** inference |
+| Discovery | `@arkiv-network/sdk` capability offers |
+| Payments | `@x402/hedera` exact + `cryptoTransfer` |
+| Audit | HCS + Mirror REST + HashScan links |
+| Merchants | Our x402 RPC pack (+ intel stub for stretch) |
+| Evidence | Signed receipts + HCS anchors |
 
-No general `transfer_hbar`, no unconstrained HTTP without the gate.
-
----
-
-## Dashboard (proof board)
-
-One job view, four panels:
-
-1. **Job** — target address, cap, remaining, ENS allowlist  
-2. **Settlements** — HashScan links for each PAY  
-3. **Discovery + identity** — Arkiv offer entity + ENS name used  
-4. **Audit** — HCS timeline with DENY highlighted  
-
-Plus the short evidence report below.
-
----
-
-## Build order
-
-```mermaid
-flowchart LR
-  A["1. Sellers + x402 roundtrip"] --> B["2. PolicyGate + HCS"]
-  B --> C["3. Arkiv seed + discover"]
-  C --> D["4. ENS resolve + allowlist"]
-  D --> E["5. Agent + report"]
-  E --> F["6. Dashboard + deny demo"]
-```
-
-1. Seller endpoint returns 402 → pay with `@x402/hedera` → get JSON  
-2. Wrap payment in PolicyGate + HCS (unit-test allowlist / over-cap)  
-3. Publish Arkiv offers; query them  
-4. Wire ENSv2 resolution into the gate  
-5. Agent tool loop + Mirror-backed report  
-6. Dashboard + one-click compromised path  
-
----
-
-## Demo script (~90 seconds)
-
-1. Paste suspicious account + `$0.50` + ENS sellers A, B  
-2. Agent finds Arkiv offers, pays A, pulls data, writes report  
-3. Show HashScan settle + Arkiv entity + ENS name + report  
-4. Trigger off-allowlist buy → **DENY on HCS**, no settlement  
-5. One-liner: useful work, autonomous pay, and a bad agent still can’t drain the budget or pay an unapproved seller  
-
----
-
-## Planned repo layout
+### Planned repo layout
 
 ```
 TraceVault/
-  README.md                 # this file
-  apps/web/                 # Next.js dashboard + job API
-  apps/sellers/             # 2–3 x402 resource servers
-  packages/core/            # PolicyGate, HCS, Arkiv types, ENS resolve, report
-  scripts/seed-arkiv.ts
+  README.md
+  apps/web/              # B2B console — policy, graph, incidents, evidence
+  apps/gateway/          # Fast Recovery Plane
+  apps/sellers/          # x402 RPC (+ intel) merchants
+  packages/core/         # Policy, agent tools, Arkiv, HCS, x402, PoC, evidence
   arkiv/schema.md
   arkiv/friction.md
 ```
 
 ---
 
-## Stack (planned)
+## What TraceVault is not
 
-| Layer | Choice |
-|---|---|
-| Web | Next.js App Router |
-| Agent | Vercel AI SDK tool loop (small tool surface) |
-| Payments | `@x402/hedera` exact + `cryptoTransfer` + public facilitator |
-| Discovery | `@arkiv-network/sdk` Offer entities |
-| Identity | ENSv2 (Sepolia or mainnet) |
-| Audit | HCS `TopicMessageSubmit` + Mirror REST |
-| Chain evidence | Hedera Mirror Node REST |
-| Sellers | Express/Hono HTTP 402 services |
+- Not a generic agent marketplace  
+- Not “AI invents wallet risk” without chain evidence  
+- Not unlimited production admin  
+- Not a guarantee of any availability percentage  
+- Not a claim that listings or receipts prove absolute honesty or global uptime  
+- Not Arc Studio / ENS as primary rails for this build  
+
+---
+
+## Positioning
+
+**TraceVault — The Autonomous Resilience Operator for Web3.**
+
+An always-on operator that monitors dApp dependencies, investigates incidents, autonomously purchases verified replacement capacity, executes authorized recovery, and publishes independently checkable evidence — without unlimited spending or production privileges.
+
+**Build next:** Dependency Graph + Resilience Contract + Self-Healing RPC Gateway.  
+Then wallet investigation, Guardian Drills, and further modules attach to the same Supreme Agent.
 
 ---
 
 ## Status
 
-Architecture and prize stack locked. Implementation next.
+Product vision and architecture locked as **TraceVault 2.0**.  
+Hackathon MVP: **Self-Healing RPC Gateway** five-act demo.
 
 Built for **ETHGlobal Mumbai 2026**.
