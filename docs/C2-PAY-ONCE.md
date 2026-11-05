@@ -12,7 +12,7 @@ Autonomous buyer that pays the C1 NeverDown RPC merchant on **Hedera testnet** a
    - optional `SELLER_URL=http://localhost:4001`
 4. Fund the spend account via [Hedera Portal](https://portal.hedera.com/) faucet (enough for several `10000` tinybar payments).
 
-If spend vars are empty, `pnpm pay:once` exits with a clear error naming the missing variable.
+If spend vars are empty, `pnpm pay:once` exits with a clear error naming the missing variable (the private key is never printed).
 
 ## Run
 
