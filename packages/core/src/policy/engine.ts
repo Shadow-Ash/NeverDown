@@ -26,6 +26,7 @@ export type PolicyEvaluationInput = {
   paymentRequirements: PaymentRequired;
   store: BudgetStore;
   serviceId: string;
+  sellerEnsName?: string;
   purchaseId: string;
   now?: number;
 };
@@ -79,6 +80,12 @@ export async function authorizePurchase(input: PolicyEvaluationInput): Promise<P
 
   if (!policy.allowedServiceIds.includes(input.serviceId)) {
     return { approved: false, denyReason: "SERVICE_NOT_ALLOWED", message: "service not in policy scope" };
+  }
+  if (input.sellerEnsName) {
+    const allowed = policy.allowedEnsNames ?? [];
+    if (allowed.length === 0 || !allowed.includes(input.sellerEnsName.trim().toLowerCase())) {
+      return { approved: false, denyReason: "ENS_NOT_ALLOWLISTED", message: "seller ENS name is not in the policy allowlist" };
+    }
   }
 
   const totalCommitted = input.store.totalCommittedOrReserved(policy.policyId);

@@ -10,6 +10,7 @@ export type PolicyConfig = {
   asset: "0.0.0" | (string & {});
   allowedRecipients: readonly string[];
   allowedServiceIds: readonly string[];
+  allowedEnsNames?: readonly string[];
   maxPerPaymentTinybars: bigint;
   totalBudgetTinybars: bigint;
   currency: Currency;
@@ -70,4 +71,5 @@ export type DenyReasonCode =
   | "POLICY_EXPIRED"
   | "INVALID_AMOUNT"
   | "DUPLICATE_PURCHASE_ID"
-  | "POLICY_VIOLATION";
+  | "POLICY_VIOLATION"
+  | "ENS_NOT_ALLOWLISTED";
