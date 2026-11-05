@@ -225,4 +225,8 @@ That script:
 Hermetic buyer tests (mocked fetch): `pnpm --filter @neverdown/core test`.  
 Seller C1 tests must stay green: `pnpm --filter @neverdown/sellers test`.
 
+## What C3 adds
+
+C3 wraps C2 behind **PolicyEngine** + **HCS** audit (`pnpm policy:smoke`). Allowlist / budget / payTo are checked **before** any x402 sign; PAY and DENY both land on a Hedera topic. See [docs/C3-POLICY-HCS.md](../../docs/C3-POLICY-HCS.md).
+
 Policy checks, Arkiv discovery, ENS allowlists, HCS audit logging, and provider failover are later chunks.

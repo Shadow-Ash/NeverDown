@@ -20,6 +20,7 @@ It is **programmable application resilience** with a fast failover plane and an 
 | **This README** | Product, prizes, demo, status, quick start |
 | **[docs/BUILD-CHUNKS.md](docs/BUILD-CHUNKS.md)** | **Detailed C0→C10 steps, gates, file ownership** |
 | **[docs/C2-PAY-ONCE.md](docs/C2-PAY-ONCE.md)** | C2 buyer: env, `pnpm pay:once`, HashScan |
+| **[docs/C3-POLICY-HCS.md](docs/C3-POLICY-HCS.md)** | C3 PolicyEngine + HCS: topic, smoke, Mirror |
 | **[docs/neverdown-architecture.md](docs/neverdown-architecture.md)** | Planes, components, flows, security honesty |
 | **[docs/neverdown-architecture.excalidraw](docs/neverdown-architecture.excalidraw)** | Editable architecture diagram |
 
@@ -229,7 +230,7 @@ Fill `.env` before C1/C2 (Hedera, facilitator, later Arkiv/ENS). **Never commit 
 | C0 scaffold | **Done** |
 | C1 x402 seller | **Done + tested** (22/22 unit tests) |
 | C2 x402 pay-once | **Done + live HashScan settle** ([docs/C2-PAY-ONCE.md](docs/C2-PAY-ONCE.md)) |
-| C3 PolicyEngine + HCS | In progress |
+| C3 PolicyEngine + HCS | **Done** — `pnpm hcs:create-topic` + `pnpm policy:smoke` ([docs/C3-POLICY-HCS.md](docs/C3-POLICY-HCS.md)) |
 | C4–C10 | Not started |
 | Git remote | `https://github.com/dhanushonchain/NeverDown.git` |
 | Maintainer | [ujjwaldubey1](https://github.com/ujjwaldubey1) |
