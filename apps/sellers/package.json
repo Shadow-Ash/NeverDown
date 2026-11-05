@@ -5,9 +5,24 @@
   "description": "NeverDown x402 RPC merchant (C1)",
   "type": "module",
   "scripts": {
-    "dev": "echo \"@neverdown/sellers: scaffold only (C0) — implement in C1\"",
-    "build": "echo \"@neverdown/sellers: scaffold only (C0)\"",
+    "dev": "node --env-file-if-exists=../../.env --import tsx src/server.ts",
+    "start": "node dist/server.js",
+    "build": "tsc -p tsconfig.build.json",
+    "test": "node --import tsx --test \"test/**/*.test.ts\"",
     "lint": "echo \"ok\"",
-    "typecheck": "echo \"ok\""
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@x402/core": "2.30.0",
+    "@x402/express": "2.30.0",
+    "@x402/hedera": "2.30.0",
+    "@x402/paywall": "2.30.0",
+    "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.15.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0"
   }
 }
