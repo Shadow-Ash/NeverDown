@@ -2,7 +2,7 @@
 
 ### The Autonomous Resilience Operator for Web3
 
-**ETHGlobal Mumbai 2026** · Repo: [github.com/ujjwaldubey1/NeverDown](https://github.com/ujjwaldubey1/NeverDown)
+**ETHGlobal Mumbai 2026** · Repo: [github.com/dhanushonchain/NeverDown](https://github.com/dhanushonchain/NeverDown)
 
 > When existing providers can’t supply what you need, NeverDown discovers, verifies, purchases, and activates a replacement — under an enforceable resilience policy — and proves every step.
 
@@ -227,8 +227,6 @@ Fill `.env` before C1/C2 (Hedera, facilitator, later Arkiv/ENS). **Never commit 
 | Brand | **NeverDown** |
 | C0 scaffold | **Done** |
 | C1–C10 | Not started |
-| Git remote | `https://github.com/ujjwaldubey1/NeverDown.git` |
-
-Create the empty GitHub repo under **ujjwaldubey1** if it does not exist yet, then `git push -u origin main`.
+| Git remote | `https://github.com/dhanushonchain/NeverDown.git` |
 
 Built for **ETHGlobal Mumbai 2026**.
