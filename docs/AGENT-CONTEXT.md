@@ -51,8 +51,8 @@ Failure spot unhealthy
 | C3 | **Done + tested** | `packages/core/src/policy`, `hcs` — `pnpm policy:smoke` |
 | C4 | **Code + hermetic tests** | `apps/gateway` — failover without AI |
 | C5 | **Code done** (live needs `ARKIV_*`) | `packages/core/src/arkiv` — `pnpm arkiv:seed` / `arkiv:query` |
-| **C6** | **Next** | ENSv2 allowlist — fail closed |
-| C7 | Not started | Proof-of-Capability |
+| C6 | **Code done** (hermetic) | `packages/core/src/ens` — resolve allowlist, fail closed |
+| **C7** | **Next** | Proof-of-Capability |
 | C8 | Not started | Supreme Agent wire-up |
 | C9 | Not started | Console UI |
 | C10 | Not started | Judge packaging |
@@ -69,16 +69,13 @@ Failure spot unhealthy
 
 ---
 
-## Next phase: C6 (when implementing)
+## Next phase: C7 (when implementing)
 
-- Build `packages/core/src/ens/**`
-- Allowlist = ENS names; resolve text records → `payTo` / service URL
-- Off-allowlist or resolve failure → **DENY** via C3 (never sign)
-- Env: `ENS_RPC_URL`, `ENS_ALLOWLIST_NAMES`
-- Commit message target: `feat(ens): C6 ENSv2 resolve allowlist`
-- Do **not** start C7+ until C6 gate is green
+- Proof-of-Capability before activate (live-test candidate; reject bad providers)
+- Wire after ENS resolve / before or inside policy approve path as per BUILD-CHUNKS
+- Do **not** start C8+ until C7 gate is green
 
-Details: [BUILD-CHUNKS.md](./BUILD-CHUNKS.md) § C6.
+Details: [BUILD-CHUNKS.md](./BUILD-CHUNKS.md) § C7.
 
 ---
 

@@ -242,8 +242,9 @@ Fill `.env` before C1/C2 (Hedera, facilitator, later Arkiv/ENS). **Never commit 
 | C3 PolicyEngine + HCS | **Done + tested** — `pnpm policy:smoke` ([docs/C3-POLICY-HCS.md](docs/C3-POLICY-HCS.md)) |
 | C4 Gateway | **Code landed** (merged from remote) |
 | C5 Arkiv offers | **Code done** — set `ARKIV_*`, then `pnpm arkiv:seed` / `arkiv:query` ([docs/C5-ARKIV.md](docs/C5-ARKIV.md)) |
-| **Next → C6** | ENSv2 allowlist (not started) |
-| C7–C10 | Not started |
+| C6 ENSv2 allowlist | **Code done** (hermetic tests) |
+| **Next → C7** | Proof-of-Capability (not started) |
+| C8–C10 | Not started |
 | Git remote | `https://github.com/dhanushonchain/NeverDown.git` |
 | Maintainer | [ujjwaldubey1](https://github.com/ujjwaldubey1) |
 

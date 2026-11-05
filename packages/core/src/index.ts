@@ -12,3 +12,4 @@ export * from "./x402/index.js";
 export * from "./policy/index.js";
 export * from "./hcs/index.js";
 export * from "./arkiv/index.js";
+export * from "./ens/index.js";

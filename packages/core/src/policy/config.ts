@@ -62,6 +62,7 @@ export function loadPolicyConfig(env: NodeJS.ProcessEnv = process.env): PolicyCo
 
   const serviceRaw = env.POLICY_SERVICES?.trim() || "neverdown-rpc-pack";
   const allowedServiceIds = serviceRaw.split(/[,\s]+/).map((x) => x.trim()).filter(Boolean);
+  const allowedEnsNames = split(env, "ENS_ALLOWLIST_NAMES", []).map((x) => x.toLowerCase());
 
   const expiresAt = env.POLICY_EXPIRES_AT?.trim() || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
   if (Number.isNaN(Date.parse(expiresAt))) throw new PolicyConfigError("POLICY_EXPIRES_AT invalid", "POLICY_EXPIRES_AT");
@@ -74,6 +75,7 @@ export function loadPolicyConfig(env: NodeJS.ProcessEnv = process.env): PolicyCo
     asset,
     allowedRecipients: recipients,
     allowedServiceIds,
+    allowedEnsNames,
     maxPerPaymentTinybars: maxPerPayment,
     totalBudgetTinybars: totalBudget,
     currency: "HBAR",

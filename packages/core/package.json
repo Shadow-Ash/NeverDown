@@ -25,6 +25,7 @@
     "@hiero-ledger/sdk": "2.90.1",
     "@x402/core": "2.30.0",
     "@x402/hedera": "2.30.0",
+    "ethers": "^6.16.0",
     "viem": "^2.57.16"
   },
   "devDependencies": {
