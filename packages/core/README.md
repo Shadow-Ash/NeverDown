@@ -8,7 +8,9 @@ Shared NeverDown logic.
 | **C2** | `src/x402/` — Hedera buyer (`payForRpcOnce`, `loadBuyerConfig`) |
 | **C3** | `src/policy/` + `src/hcs/` — authorize-before-sign + HCS audit |
 | **C5** | `src/arkiv/` — capability offer seed + `discoverOffers` |
-| C6+ | ENS, PoC, agent |
+| **C6** | `src/ens/` — ENSv2 allowlist resolve |
+| **C7** | `src/poc/` — Proof-of-Capability before install |
+| C8+ | agent, UI |
 
 ## Quick use
 

@@ -22,7 +22,7 @@ Do **not** start UI (C9) before rails (C1–C7) and agent (C8) work.
 | C4 | Gateway fast plane | **Code landed** (merged) | Failover without AI |
 | C5 | Arkiv offers | **Code done** (live needs `ARKIV_*`) | Live query returns offers |
 | C6 | ENSv2 resolve identity | **Code done** (hermetic tests) | Off-allowlist fail-closed |
-| C7 | Proof-of-Capability | Not started | Bad RPC rejected |
+| C7 | Proof-of-Capability | **Done** | Bad RPC rejected |
 | C8 | Supreme Agent wire-up | Not started | Act 3 + Act 4 CLI |
 | C9 | Console UI | Not started | Five-act clickable |
 | C10 | Judge packaging | Not started | Ship checklist green |
@@ -353,9 +353,9 @@ pnpm exec tsx scripts/poc-smoke.ts
 
 ### Done when
 
-- [ ] Failures never install standby  
-- [ ] Checks listed in evidence object  
-- [ ] Commit: `feat(core): C7 proof-of-capability`  
+- [x] Failures never install standby  
+- [x] Checks listed in evidence object  
+- [x] Commit: `feat(core): C7 proof-of-capability`  
 
 ---
 

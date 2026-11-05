@@ -52,8 +52,8 @@ Failure spot unhealthy
 | C4 | **Code + hermetic tests** | `apps/gateway` — failover without AI |
 | C5 | **Code done** (live needs `ARKIV_*`) | `packages/core/src/arkiv` — `pnpm arkiv:seed` / `arkiv:query` |
 | C6 | **Code done** (hermetic) | `packages/core/src/ens` — resolve allowlist, fail closed |
-| **C7** | **Next** | Proof-of-Capability |
-| C8 | Not started | Supreme Agent wire-up |
+| C7 | **Done** | `packages/core/src/poc` — `pnpm poc:smoke` |
+| **C8** | **Next** | Supreme Agent wire-up (C3–C7 tools) |
 | C9 | Not started | Console UI |
 | C10 | Not started | Judge packaging |
 
@@ -69,13 +69,12 @@ Failure spot unhealthy
 
 ---
 
-## Next phase: C7 (when implementing)
+## Next phase: C8 (when implementing)
 
-- Proof-of-Capability before activate (live-test candidate; reject bad providers)
-- Wire after ENS resolve / before or inside policy approve path as per BUILD-CHUNKS
-- Do **not** start C8+ until C7 gate is green
+- Wire C3–C7 into one tool-calling agent CLI (discover → ENS → PoC → policy → pay / deny)
+- Do **not** start C9 UI until C8 gate is green
 
-Details: [BUILD-CHUNKS.md](./BUILD-CHUNKS.md) § C7.
+Details: [BUILD-CHUNKS.md](./BUILD-CHUNKS.md) § C8.
 
 ---
 

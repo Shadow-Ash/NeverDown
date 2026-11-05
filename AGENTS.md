@@ -20,7 +20,7 @@ You are working on **NeverDown** (ETHGlobal Mumbai). Full handoff: **[docs/AGENT
 
 | Done | Next |
 |---|---|
-| C0–C6 (C5 Arkiv live needs `ARKIV_*`; C6 ENS hermetic done) | **C7 Proof-of-Capability** → C8 agent → C9 UI → C10 pack |
+| C0–C7 (C5 Arkiv live needs `ARKIV_*`) | **C8 Supreme Agent** → C9 UI → C10 pack |
 
 ## Where to look
 
