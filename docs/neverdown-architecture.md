@@ -10,15 +10,17 @@ Product overview: **[../README.md](../README.md)**
 
 ## What NeverDown is
 
-NeverDown is the **autonomous resilience operator** for Web3 apps.
+NeverDown is the **autonomous resilience operator** for Web3 apps — **not an RPC-only product**.
 
 Customers define:
 
-1. What must stay up (dependency graph)  
-2. What the agent may change (operational permissions)  
-3. How much it may spend (financial policy)  
+1. **Failure spots** that must stay up (dependency graph: RPC, indexer, price feed, …)  
+2. **What to do** when each spot fails (playbook / allowed actions)  
+3. **How much** the agent may spend (financial policy)  
 
-NeverDown then **monitors**, **investigates**, **procures** replacement capacity when needed, **recovers**, and **proves** every decision.
+That programming is stored as a **Resilience Contract** (machine-enforceable policy). NeverDown then **monitors**, **investigates**, **procures** replacement capacity when needed, **recovers**, and **proves** every decision.
+
+**Hackathon demo vertical:** JSON-RPC (C1 seller, C2 pay, C4 gateway). Same two-plane pattern applies to other dependency types.
 
 It is **not** “an AI that SSHes into prod and hopes.”  
 It is **programmable resilience** with two planes and a hard policy gate.
@@ -29,14 +31,14 @@ It is **programmable resilience** with two planes and a hard policy gate.
 
 | Plane | Job | Speed | Depends on AI / x402? |
 |---|---|---|---|
-| **Fast Recovery (data plane)** | Switch to a **pretested, preapproved** standby when health checks fail | Milliseconds–seconds | **No** |
+| **Fast Recovery (data plane)** | Switch to a **pretested, preapproved** standby for that failure spot | Milliseconds–seconds | **No** |
 | **Procurement (control plane)** | Discover → verify → pay → install a **new** standby after an incident | Seconds–minutes | **Yes** |
 
 Judges should hear:
 
-> We do not need the LLM to save every RPC request. The agent **replenishes** redundancy so the next failure is cheap.
+> RPC is our example failure spot. We do not need the LLM to save every request. The fast plane recovers; the agent **replenishes** redundancy so the next failure is cheap.
 
-If Arkiv, Hedera, or the LLM is down, the gateway must keep serving **last-known-good** routes.
+If Arkiv, Hedera, or the LLM is down, the data plane must keep serving **last-known-good** routes for that dependency.
 
 ---
 
@@ -62,8 +64,8 @@ flowchart TB
 
 | Box | Owns | Must never |
 |---|---|---|
-| **Gateway** | Proxy JSON-RPC; health; standby switch; rollback config | Call LLM or wait on x402 per request |
-| **Health monitors** | Detect timeouts, stale blocks, wrong chainId | Auto-purchase |
+| **Gateway (demo: RPC)** | First fast-plane adapter: proxy JSON-RPC; health; standby switch | Call LLM or wait on x402 per request; claim RPC is the whole product |
+| **Health monitors** | Detect failure for a registered spot (demo: timeouts, stale blocks, wrong chainId) | Auto-purchase |
 | **Supreme Agent** | Plan tools: discover, resolve, PoC, purchase, install | Hold spend keys or “run any shell” |
 | **Arkiv** | Expiring, wallet-owned capability offers | Be treated as proof of honesty |
 | **ENSv2** | Seller/agent names + text records for allowlist | Be a cosmetic label only |

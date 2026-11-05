@@ -4,12 +4,13 @@
 
 **ETHGlobal Mumbai 2026** · Repo: [github.com/dhanushonchain/NeverDown](https://github.com/dhanushonchain/NeverDown)
 
-> When existing providers can’t supply what you need, NeverDown discovers, verifies, purchases, and activates a replacement — under an enforceable resilience policy — and proves every step.
+> Pick any failure spot in your stack. Program what NeverDown should do. Policy lives in a **Resilience Contract**. When that spot breaks, NeverDown recovers and — if needed — discovers, pays for, and installs a replacement, with proof.
 
-NeverDown is a B2B ops layer for live dApps: **monitor → investigate → procure → recover → verify → audit**, inside explicit spend and action limits.
+NeverDown is a B2B **programmable resilience operator** for live dApps: **monitor → investigate → procure → recover → verify → audit**, inside explicit spend and action limits.
 
+It is **not** “an RPC product.” RPC is only the **first demo vertical** (a concrete failure spot).  
 It is **not** a chatbot that “tries to fix prod.”  
-It is **programmable application resilience** with a fast failover plane and an autonomous procurement plane.
+It is **general dependency resilience**: you attach NeverDown to a failure class, encode the playbook, and the two planes execute it.
 
 ---
 
@@ -28,26 +29,28 @@ It is **programmable application resilience** with a fast failover plane and an 
 
 ## Problem
 
-Small DeFi / wallet / infra teams cannot run 24/7 ops. At 3 AM: RPC dies, indexer lags, price API fails, treasury looks weird.
+Small DeFi / wallet / infra teams cannot run 24/7 ops. At 3 AM any **dependency** can fail: RPC, indexer, price API, oracle relay, bridge status endpoint, metadata host — not just one vendor category.
 
 | What exists today | Gap |
 |---|---|
-| Monitoring / AI-SRE (alerts, guided remediation) | Doesn’t **buy** new capacity |
-| RPC gateways (preconfigured failover) | Doesn’t **discover + pay** for a new provider |
-| Agent wallets (spend caps) | Rarely unify **payment + operational** permissions |
+| Monitoring / AI-SRE (alerts, guided remediation) | Doesn’t **buy** or install replacement capacity under policy |
+| Single-purpose failover (e.g. RPC-only gateways) | Tied to one failure type; doesn’t generalize the playbook |
+| Agent wallets (spend caps) | Rarely unify **payment + operational** permissions per dependency |
 
-**NeverDown’s wedge:** vendor-independent **service acquisition** under policy — then install as standby and leave an evidence trail.
+**NeverDown’s wedge:** for **any registered failure spot**, encode *what to do* in a **Resilience Contract**, recover fast on a preapproved path, then **procure** a replacement under policy — with an evidence trail.
 
 ---
 
 ## How it works (simple)
 
-1. You connect a dApp and define a **Resilience Contract** (budget, allowlisted sellers, allowed actions).  
-2. Traffic goes through the **NeverDown gateway** (data plane).  
-3. If primary RPC fails → gateway switches to a **preapproved standby** instantly (no AI, no payment).  
-4. The **Supreme Agent** then finds a replacement on **Arkiv**, checks **ENS** identity, runs **Proof-of-Capability**, pays with **Hedera x402** if policy allows, and installs a new standby.  
-5. If the agent tries an unapproved seller or goes over budget → **refuse before sign** → **HCS DENY**.  
+1. You map failure spots (dependency graph) and write a **Resilience Contract**: budget, allowlists, allowed actions, per-spot playbooks.  
+2. The **fast plane** fronts that dependency (hackathon demo: JSON-RPC gateway).  
+3. On health failure → switch to a **preapproved standby** instantly (no AI, no payment).  
+4. The **Supreme Agent** replenishes capacity: **Arkiv** discover → **ENS** identity → **Proof-of-Capability** → **Hedera x402** pay if policy allows → install new standby.  
+5. Bad seller / over budget → **refuse before sign** → **HCS DENY**.  
 6. Dashboard shows HashScan, Arkiv entity, ENS name, and HCS receipts.
+
+**Hackathon vertical = RPC** (sellers C1, pay C2, gateway C4). Same pattern applies to other failure spots later; the rails (policy, pay, audit) are shared.
 
 ---
 
@@ -55,13 +58,13 @@ Small DeFi / wallet / infra teams cannot run 24/7 ops. At 3 AM: RPC dies, indexe
 
 ```mermaid
 flowchart TD
-  Fail["Primary health check fails"] --> Fast{"Preapproved standby healthy?"}
-  Fast -->|yes| Switch["Gateway switches immediately\nno LLM · no x402"]
+  Fail["Registered failure spot unhealthy"] --> Fast{"Preapproved standby healthy?"}
+  Fast -->|yes| Switch["Fast plane switches immediately\nno LLM · no x402"]
   Switch --> Serve["App keeps serving"]
   Fast -->|no| Alert["Degraded / escalate"]
   Serve --> Procure["Agent: Arkiv → ENS → PoC → Policy"]
   Alert --> Procure
-  Procure --> Gate{"Policy OK?"}
+  Procure --> Gate{"Resilience Contract OK?"}
   Gate -->|yes| Pay["Hedera x402 · install standby · HCS PAY"]
   Gate -->|no| Deny["Refuse · HCS DENY"]
 ```
@@ -74,11 +77,12 @@ Full architecture: [docs/neverdown-architecture.md](docs/neverdown-architecture.
 
 | Feature | One-line |
 |---|---|
-| **Resilience Contract** | Machine-enforceable budget, allowlist, and allowed actions (not unlimited admin) |
+| **Resilience Contract** | On-chain / machine-enforceable playbook: budget, allowlist, allowed actions per failure spot |
+| **Any failure spot** | RPC is the demo; same operator model for indexer, price API, oracle, etc. |
 | **Dependency Graph** | Know which failures are critical vs noise (manifest-first for hackathon) |
 | **Recovery before procurement** | Fast plane failover; agent replenishes capacity afterward |
-| **Capability marketplace** | Arkiv offers for RPC / intel — not a generic agent bazaar |
-| **Proof-of-Capability** | Live-test a provider before activate |
+| **Capability marketplace** | Arkiv offers for the capability type you need — not a generic agent bazaar |
+| **Proof-of-Capability** | Live-test a candidate before activate |
 | **Evidence Ledger** | HCS-anchored receipts + HashScan — independently checkable |
 | **Bounded autonomy** | Observe / Recover / Privileged (human) |
 
@@ -88,7 +92,7 @@ Full architecture: [docs/neverdown-architecture.md](docs/neverdown-architecture.
 
 | # | Sponsor | Exact bounty | NeverDown use |
 |---|---|---|---|
-| 1 | **Hedera** | [AI Agents That Pay: x402](https://ethglobal.com/events/mumbai/prizes/hedera) ($6.5k) | Autopay RPC packs; budgets; HCS audit; HashScan proof |
+| 1 | **Hedera** | [AI Agents That Pay: x402](https://ethglobal.com/events/mumbai/prizes/hedera) ($6.5k) | Autopay replacement capacity (demo: RPC packs); budgets; HCS audit; HashScan proof |
 | 2 | **Arkiv** | [Build on Arkiv (from scratch)](https://ethglobal.com/events/mumbai/prizes/arkiv) ($4k) | Expiring wallet-owned capability offers the agent queries |
 | 3 | **ENS** | [Best Use of ENSv2](https://ethglobal.com/events/mumbai/prizes/ens) ($7k) | Seller/agent namespaces + text records gate the allowlist |
 

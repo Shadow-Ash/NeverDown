@@ -201,11 +201,11 @@ Verify Mirror: `GET /api/v1/topics/{id}/messages`
 
 ### Goal
 
-Deterministic RPC proxy: health-check primary, switch to preapproved standby **without** LLM or x402.
+Deterministic **fast-plane adapter** (hackathon demo: JSON-RPC proxy): health-check primary, switch to preapproved standby **without** LLM or x402. RPC is an **example failure spot**, not the product boundary.
 
 ### Why
 
-Proves “recovery before procurement.” Data plane must survive control-plane outage.
+Proves “recovery before procurement.” Data plane must survive control-plane outage. Same pattern later wraps other dependency types under one Resilience Contract.
 
 ### Build only
 
