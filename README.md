@@ -28,6 +28,7 @@ It is **general dependency resilience**: you attach NeverDown to a failure class
 | **[docs/C3-POLICY-HCS.md](docs/C3-POLICY-HCS.md)** | C3 PolicyEngine + HCS: topic, smoke, Mirror |
 | **[docs/C5-ARKIV.md](docs/C5-ARKIV.md)** | C5 Arkiv offers: seed, query, schema |
 | **[docs/C7-POC.md](docs/C7-POC.md)** | C7 Proof-of-Capability before install |
+| **[docs/C8-AGENT.md](docs/C8-AGENT.md)** | C8 Supreme Agent procure / deny CLI |
 | **[docs/neverdown-architecture.md](docs/neverdown-architecture.md)** | Planes, components, flows, security honesty |
 | **[docs/neverdown-architecture.excalidraw](docs/neverdown-architecture.excalidraw)** | Editable architecture diagram |
 
@@ -245,8 +246,9 @@ Fill `.env` before C1/C2 (Hedera, facilitator, later Arkiv/ENS). **Never commit 
 | C5 Arkiv offers | **Code done** — set `ARKIV_*`, then `pnpm arkiv:seed` / `arkiv:query` ([docs/C5-ARKIV.md](docs/C5-ARKIV.md)) |
 | C6 ENSv2 allowlist | **Code done** (hermetic tests) |
 | C7 Proof-of-Capability | **Done** — `pnpm poc:smoke` ([docs/C7-POC.md](docs/C7-POC.md)) |
-| **Next → C8** | Supreme Agent wire-up (not started) |
-| C9–C10 | Not started |
+| C8 Supreme Agent | **Done** — `pnpm agent:demo --scenario procure\|deny` ([docs/C8-AGENT.md](docs/C8-AGENT.md)) |
+| **Next → C9** | Console UI (not started) |
+| C10 | Not started |
 | Git remote | `https://github.com/dhanushonchain/NeverDown.git` |
 | Maintainer | [ujjwaldubey1](https://github.com/ujjwaldubey1) |
 

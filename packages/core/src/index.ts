@@ -14,3 +14,4 @@ export * from "./hcs/index.js";
 export * from "./arkiv/index.js";
 export * from "./ens/index.js";
 export * from "./poc/index.js";
+export * from "./agent/index.js";

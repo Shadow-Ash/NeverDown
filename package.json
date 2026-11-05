@@ -15,6 +15,7 @@
     "arkiv:seed": "node --env-file-if-exists=.env --import tsx scripts/seed-arkiv.ts",
     "arkiv:query": "node --env-file-if-exists=.env --import tsx scripts/query-arkiv.ts",
     "poc:smoke": "node --env-file-if-exists=.env --import tsx scripts/poc-smoke.ts",
+    "agent:demo": "node --env-file-if-exists=.env --import tsx scripts/agent-demo.ts",
     "test:core": "pnpm --filter @neverdown/core test",
     "test:sellers": "pnpm --filter @neverdown/sellers test",
     "test:gateway": "pnpm --filter @neverdown/gateway test"

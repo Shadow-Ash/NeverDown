@@ -53,8 +53,8 @@ Failure spot unhealthy
 | C5 | **Code done** (live needs `ARKIV_*`) | `packages/core/src/arkiv` — `pnpm arkiv:seed` / `arkiv:query` |
 | C6 | **Code done** (hermetic) | `packages/core/src/ens` — resolve allowlist, fail closed |
 | C7 | **Done** | `packages/core/src/poc` — `pnpm poc:smoke` |
-| **C8** | **Next** | Supreme Agent wire-up (C3–C7 tools) |
-| C9 | Not started | Console UI |
+| C8 | **Done** | `packages/core/src/agent` — `pnpm agent:demo` |
+| **C9** | **Next** | Console UI (five-act demo) |
 | C10 | Not started | Judge packaging |
 
 ---
@@ -69,12 +69,12 @@ Failure spot unhealthy
 
 ---
 
-## Next phase: C8 (when implementing)
+## Next phase: C9 (when implementing)
 
-- Wire C3–C7 into one tool-calling agent CLI (discover → ENS → PoC → policy → pay / deny)
-- Do **not** start C9 UI until C8 gate is green
+- Next.js console: five acts, inject outage, procure, deny, evidence links
+- Do **not** start C10 until C9 gate is green
 
-Details: [BUILD-CHUNKS.md](./BUILD-CHUNKS.md) § C8.
+Details: [BUILD-CHUNKS.md](./BUILD-CHUNKS.md) § C9.
 
 ---
 

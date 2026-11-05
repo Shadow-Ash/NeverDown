@@ -10,7 +10,8 @@ Shared NeverDown logic.
 | **C5** | `src/arkiv/` — capability offer seed + `discoverOffers` |
 | **C6** | `src/ens/` — ENSv2 allowlist resolve |
 | **C7** | `src/poc/` — Proof-of-Capability before install |
-| C8+ | agent, UI |
+| **C8** | `src/agent/` — Supreme Agent procure / deny |
+| C9+ | UI |
 
 ## Quick use
 

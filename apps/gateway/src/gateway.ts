@@ -310,8 +310,55 @@ export class GatewayController {
     };
   }
 
-  installStandby(_request: unknown): { ok: boolean; status: number; body: unknown } {
-    return { ok: false, status: 501, body: { error: "not implemented in C4" } };
+  installStandby(request: unknown): { ok: boolean; status: number; body: unknown } {
+    const body = (request ?? {}) as { url?: unknown; rpcUrl?: unknown };
+    const raw = typeof body.url === "string" ? body.url : typeof body.rpcUrl === "string" ? body.rpcUrl : "";
+    let parsed: URL;
+    try {
+      parsed = new URL(raw.trim());
+    } catch {
+      return { ok: false, status: 400, body: { error: "url required (http/https)" } };
+    }
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+      return { ok: false, status: 400, body: { error: "url must be http or https" } };
+    }
+    if (parsed.username || parsed.password) {
+      return { ok: false, status: 400, body: { error: "url must not contain credentials" } };
+    }
+    const url = parsed.toString();
+    const primary = this.config.providers.find((p) => p.id === "primary");
+    if (primary && primary.url === url) {
+      return { ok: false, status: 400, body: { error: "standby url must differ from primary" } };
+    }
+
+    const existing = this.config.providers.find((p) => p.id === "standby");
+    const oldUrl = existing?.url ?? null;
+    if (existing) {
+      existing.url = url;
+    } else {
+      this.config.providers.push({ id: "standby", url });
+    }
+    this.providerStatus.set("standby", {
+      id: "standby",
+      url,
+      healthy: false,
+      healthySince: null,
+      lastCheckAt: null,
+      consecutiveSuccesses: 0,
+      consecutiveFailures: 0,
+      chainId: null,
+      blockNumber: null,
+      lastKnownBlockNumber: null,
+      latencyMs: null,
+      reason: "installed; awaiting health probe",
+      lastError: null,
+    });
+    this.logEvent("standby", "standby installed", this.activeId, this.activeId, "pass", `oldUrl=${oldUrl ?? "none"} newUrl=${url}`);
+    return {
+      ok: true,
+      status: 200,
+      body: { installed: true, providerId: "standby", url, oldUrl, active: this.activeId },
+    };
   }
 
   snapshot() {

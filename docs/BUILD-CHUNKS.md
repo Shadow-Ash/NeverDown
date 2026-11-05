@@ -23,7 +23,7 @@ Do **not** start UI (C9) before rails (C1–C7) and agent (C8) work.
 | C5 | Arkiv offers | **Code done** (live needs `ARKIV_*`) | Live query returns offers |
 | C6 | ENSv2 resolve identity | **Code done** (hermetic tests) | Off-allowlist fail-closed |
 | C7 | Proof-of-Capability | **Done** | Bad RPC rejected |
-| C8 | Supreme Agent wire-up | Not started | Act 3 + Act 4 CLI |
+| C8 | Supreme Agent wire-up | **Done** | Act 3 + Act 4 CLI |
 | C9 | Console UI | Not started | Five-act clickable |
 | C10 | Judge packaging | Not started | Ship checklist green |
 
@@ -396,9 +396,9 @@ pnpm exec tsx scripts/agent-demo.ts --scenario deny
 
 ### Done when
 
-- [ ] Procure path updates gateway standby  
-- [ ] Deny path has no settle  
-- [ ] Commit: `feat(agent): C8 supreme agent procure and deny`  
+- [x] Procure path updates gateway standby (hermetic record + live admin API / gateway `installStandby`)  
+- [x] Deny path has no settle  
+- [x] Commit: `feat(agent): C8 supreme agent procure and deny`  
 
 ---
 
