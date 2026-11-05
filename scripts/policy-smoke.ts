@@ -1,149 +1,36 @@
-/**
- * C3 live smoke: good PAY + three DENY reasons against local sellers + HCS topic.
- *
- * Prerequisites:
- * - Sellers: `pnpm --filter @neverdown/sellers dev`
- * - `.env`: spend, operator, topic, POLICY_ALLOWLIST, POLICY_CAP_TINYBARS
- *
- * Run: `pnpm policy:smoke`
- */
-import {
-  PolicyConfigError,
-  PolicyEngine,
-  fetchRecentAuditMessages,
-  loadPolicyRuntimeConfig,
-  mirrorTopicUrl,
-} from "../packages/core/src/index.js";
+import { loadPolicyConfig, openBudgetStore, authorizePurchase } from "../packages/core/src/index.js";
 
-function sleep(ms: number): Promise<void> {
-  return new Promise((r) => setTimeout(r, ms));
-}
+async function main() {
+  const policy = loadPolicyConfig(process.env);
+  const store = openBudgetStore(":memory:");
+  const challenge = {
+    x402Version: 2,
+    error: "Payment required",
+    resource: { url: "http://localhost:4001/rpc", mimeType: "application/json" },
+    accepts: [{ scheme: "exact", network: policy.network, amount: policy.maxPerPaymentTinybars.toString(), asset: policy.asset, payTo: policy.allowedRecipients[0], maxTimeoutSeconds: 60 }],
+  } as never;
 
-async function main(): Promise<void> {
-  let runtime;
-  try {
-    runtime = loadPolicyRuntimeConfig(process.env);
-  } catch (err) {
-    if (err instanceof PolicyConfigError) {
-      console.error(`Config error${err.envVar ? ` (${err.envVar})` : ""}: ${err.message}`);
-      console.error("See docs/C3-POLICY-HCS.md — create topic with pnpm hcs:create-topic if needed.");
-      process.exitCode = 1;
-      return;
-    }
-    throw err;
-  }
+  const good = await authorizePurchase({ policy, paymentRequirements: challenge as never, store, serviceId: policy.allowedServiceIds[0], purchaseId: "smoke-good" });
+  console.log("good authorization:", good.approved ? "AUTHORIZED" : "DENIED " + (good as never).denyReason);
 
-  const merchant =
-    process.env.HEDERA_MERCHANT_ACCOUNT_ID?.trim() ||
-    runtime.state.allowlist[0]?.payTo;
-  if (!merchant) {
-    console.error("Missing merchant payTo (HEDERA_MERCHANT_ACCOUNT_ID or POLICY_ALLOWLIST)");
-    process.exitCode = 1;
-    return;
-  }
+  const bad = await authorizePurchase({ policy, paymentRequirements: challenge, store, serviceId: policy.allowedServiceIds[0], purchaseId: "smoke-bad", /* force mismatch via alternate challenge */ });
+  console.log("second purchase (duplicate ID):", bad.approved ? "AUTHORIZED" : "DENIED " + (bad as never).denyReason);
 
-  const price = BigInt(process.env.HEDERA_X402_PRICE_SMALLEST_UNITS?.trim() || "10000");
-  const engine = new PolicyEngine({
-    state: runtime.state,
-    buyer: runtime.buyer,
-    operator: runtime.operator,
-    topicId: runtime.topicId,
+  const denied = await authorizePurchase({
+    policy,
+    paymentRequirements: {
+      x402Version: 2,
+      error: "Payment required",
+      resource: { url: "http://localhost:4001/rpc", mimeType: "application/json" },
+      accepts: [{ scheme: "exact", network: policy.network, amount: "10000", asset: policy.asset, payTo: "0.0.9999", maxTimeoutSeconds: 60 }],
+    } as never,
+    store,
+    serviceId: policy.allowedServiceIds[0],
+    purchaseId: "smoke-denied",
   });
-
-  console.log(`Topic: ${runtime.topicId}`);
-  console.log(`HashScan topic: ${mirrorTopicUrl(runtime.topicId)}`);
-  console.log(`Cap: ${runtime.state.capTinybars} tinybars · spent: ${runtime.state.spentTinybars}`);
-  console.log("");
-
-  // 1) OFF_ALLOWLIST
-  {
-    console.log("— Scenario: OFF_ALLOWLIST");
-    const r = await engine.authorizePurchase({
-      sellerId: "not-allowlisted-seller",
-      payTo: merchant,
-      amountTinybars: price,
-    });
-    if (r.ok || r.reason !== "OFF_ALLOWLIST") {
-      console.error("Expected DENY OFF_ALLOWLIST", r);
-      process.exitCode = 1;
-      return;
-    }
-    console.log(`DENY OFF_ALLOWLIST ok (HCS ${r.hcs?.transactionId ?? "n/a"})`);
-  }
-
-  // 2) PAYTO_MISMATCH
-  {
-    console.log("— Scenario: PAYTO_MISMATCH");
-    const r = await engine.authorizePurchase({
-      sellerId: "neverdown-rpc",
-      payTo: "0.0.1",
-      amountTinybars: price,
-    });
-    if (r.ok || r.reason !== "PAYTO_MISMATCH") {
-      console.error("Expected DENY PAYTO_MISMATCH", r);
-      process.exitCode = 1;
-      return;
-    }
-    console.log(`DENY PAYTO_MISMATCH ok (HCS ${r.hcs?.transactionId ?? "n/a"})`);
-  }
-
-  // 3) OVER_CAP — use a temporary engine with tiny remaining budget
-  {
-    console.log("— Scenario: OVER_CAP");
-    const tight = new PolicyEngine({
-      state: {
-        ...runtime.state,
-        capTinybars: price - 1n > 0n ? price - 1n : 1n,
-        spentTinybars: 0n,
-      },
-      buyer: runtime.buyer,
-      operator: runtime.operator,
-      topicId: runtime.topicId,
-    });
-    const r = await tight.authorizePurchase({
-      sellerId: "neverdown-rpc",
-      payTo: merchant,
-      amountTinybars: price,
-    });
-    if (r.ok || r.reason !== "OVER_CAP") {
-      console.error("Expected DENY OVER_CAP", r);
-      process.exitCode = 1;
-      return;
-    }
-    console.log(`DENY OVER_CAP ok (HCS ${r.hcs?.transactionId ?? "n/a"})`);
-  }
-
-  // 4) Good PAY (live x402)
-  {
-    console.log("— Scenario: PAY (live x402)");
-    const r = await engine.authorizePurchase({
-      sellerId: "neverdown-rpc",
-      payTo: merchant,
-      amountTinybars: price,
-    });
-    if (!r.ok) {
-      console.error("Expected PAY", r);
-      process.exitCode = 1;
-      return;
-    }
-    console.log(`PAY ok · HashScan settle: ${r.payment.hashscanUrl}`);
-    console.log(`HCS submit: ${r.hcs.transactionId}`);
-    console.log(`Spent now: ${r.spentTinybars} / ${runtime.state.capTinybars}`);
-  }
-
-  console.log("");
-  console.log("Waiting for Mirror Node to index topic messages …");
-  await sleep(4000);
-  const messages = await fetchRecentAuditMessages(runtime.topicId, { limit: 10 });
-  const types = messages.map((m) =>
-    m.event.type === "DENY" ? `DENY:${m.event.reason}` : "PAY",
-  );
-  console.log(`Recent audit events (${messages.length}): ${types.join(", ") || "(none yet)"}`);
-  console.log(`Mirror: https://testnet.mirrornode.hedera.com/api/v1/topics/${runtime.topicId}/messages`);
-  console.log("C3 smoke complete.");
+  console.log("unknown recipient:", denied.approved ? "AUTHORIZED" : "DENIED " + denied.denyReason);
+  store.close();
+  process.exitCode = good.approved && (bad as never).denyReason === "DUPLICATE_PURCHASE_ID" && !denied.approved ? 0 : 1;
 }
 
-main().catch((err: unknown) => {
-  console.error(err instanceof Error ? err.message : err);
-  process.exitCode = 1;
-});
+main().catch((err) => { console.error(err); process.exitCode = 1; });

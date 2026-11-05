@@ -1,59 +1,32 @@
 # C3 — PolicyEngine + HCS audit
 
-Every NeverDown spend is gated by **PolicyEngine** before x402 signing. Decisions are written to a Hedera **HCS** topic as `PAY` or `DENY`.
+Server-side **authorize-before-sign** policy with durable budget reservations and Hedera **HCS** audit events.
 
-## Prerequisites
-
-1. C1 sellers running (`pnpm --filter @neverdown/sellers dev`).
-2. C2 spend wallet funded (`HEDERA_SPEND_ID` / `HEDERA_SPEND_KEY`).
-3. Operator for topic create + message submit:
-   - `HEDERA_OPERATOR_ID` / `HEDERA_OPERATOR_KEY`
-   - Hackathon: reuse the spend account (same id/key).
-4. Create a topic once:
+## Commands
 
 ```bash
-pnpm hcs:create-topic
-# → paste HEDERA_TOPIC_ID=0.0.N into .env
+pnpm --filter @neverdown/core test   # includes policy.test.ts
+pnpm policy:smoke                    # authorize / deny / duplicate-id smoke
+pnpm hcs:smoke                       # optional live HCS publish (needs operator + topic)
 ```
 
-5. Policy env:
+## Env (see `.env.example`)
 
-```env
-POLICY_CAP_TINYBARS=50000
-POLICY_ALLOWLIST=neverdown-rpc:0.0.YOUR_MERCHANT_ACCOUNT
-POLICY_VERSION=c3-v1
-```
-
-`POLICY_ALLOWLIST` is comma-separated `sellerId:payTo` pairs. `payTo` must match the seller merchant account.
-
-## Run smoke
-
-```bash
-# Terminal A
-pnpm --filter @neverdown/sellers dev
-
-# Terminal B
-pnpm policy:smoke
-```
-
-Expect:
-
-- `DENY OFF_ALLOWLIST`, `PAYTO_MISMATCH`, `OVER_CAP` (no x402 settle on those)
-- one live `PAY` with HashScan settle URL
-- Mirror topic messages listing PAY/DENY
-
-Mirror: `https://testnet.mirrornode.hedera.com/api/v1/topics/{HEDERA_TOPIC_ID}/messages`  
-HashScan topic: `https://hashscan.io/testnet/topic/{HEDERA_TOPIC_ID}`
+| Var | Meaning |
+|---|---|
+| `POLICY_ALLOWLIST` | Comma-separated merchant account ids (`payTo`) |
+| `POLICY_CAP_TINYBARS` / `POLICY_TOTAL_BUDGET_TINYBARS` | Budget |
+| `POLICY_SERVICES` | Allowed service ids (default `neverdown-rpc-pack`) |
+| `HEDERA_OPERATOR_*` + `HEDERA_TOPIC_ID` | HCS publish |
+| `HCS_AUDIT_AVAILABILITY` | `REQUIRED_DURABLE` or `BEST_EFFORT` |
 
 ## Code map
 
 | Path | Role |
 |---|---|
-| `packages/core/src/policy/` | Config + `PolicyEngine.authorizePurchase` |
-| `packages/core/src/hcs/` | Topic create/submit + Mirror decode |
-| `scripts/create-hcs-topic.ts` | One-shot topic create |
-| `scripts/policy-smoke.ts` | Live gate |
+| `packages/core/src/policy/` | `authorizePurchase`, `BudgetStore`, `securePurchase` |
+| `packages/core/src/hcs/` | `HederaHcsClient`, evidence hashing, config |
+| `scripts/policy-smoke.ts` | Authorization smoke |
+| `scripts/hcs-smoke.ts` | Live topic publish smoke |
 
-## Security note
-
-Spend private key is used only on the **approve → pay** path inside PolicyEngine. Deny reasons never call x402. Keys are never logged.
+Deny paths never call x402 settle. Keys are never logged.

@@ -15,8 +15,8 @@ Do **not** start UI (C9) before rails (C1–C7) and agent (C8) work.
 | C0 | Monorepo scaffold | **Done** | `pnpm install` |
 | C1 | x402 seller (402 only) | **Done + tested** | unpaid `POST /rpc` → HTTP 402 |
 | C2 | Hedera pay roundtrip | **Done + live HashScan settle** | `pnpm pay:once` → HashScan tx id |
-| C3 | PolicyEngine + HCS | **Done** | Deny + PAY logged |
-| C4 | Gateway fast plane | Not started | Failover without AI |
+| C3 | PolicyEngine + HCS | **Code done + tested** | Deny + PAY logged |
+| C4 | Gateway fast plane | **Code landed** (merged) | Failover without AI |
 | C5 | Arkiv offers | Not started | Live query returns offers |
 | C6 | ENSv2 allowlist | Not started | Off-allowlist fail-closed |
 | C7 | Proof-of-Capability | Not started | Bad RPC rejected |
@@ -190,10 +190,10 @@ Verify Mirror: `GET /api/v1/topics/{id}/messages`
 
 ### Done when
 
-- [x] Deny path never signs  
-- [x] PAY and DENY both visible on topic  
-- [x] Unit/smoke covers three deny reasons  
-- [x] Commit: `feat(core): C3 policy engine and HCS audit`  
+- [ ] Deny path never signs  
+- [ ] PAY and DENY both visible on topic  
+- [ ] Unit/smoke covers three deny reasons  
+- [ ] Commit: `feat(core): C3 policy engine and HCS audit`  
 
 ---
 

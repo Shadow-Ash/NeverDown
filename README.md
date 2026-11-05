@@ -230,8 +230,9 @@ Fill `.env` before C1/C2 (Hedera, facilitator, later Arkiv/ENS). **Never commit 
 | C0 scaffold | **Done** |
 | C1 x402 seller | **Done + tested** (22/22 unit tests) |
 | C2 x402 pay-once | **Done + live HashScan settle** ([docs/C2-PAY-ONCE.md](docs/C2-PAY-ONCE.md)) |
-| C3 PolicyEngine + HCS | **Done** — `pnpm hcs:create-topic` + `pnpm policy:smoke` ([docs/C3-POLICY-HCS.md](docs/C3-POLICY-HCS.md)) |
-| C4–C10 | Not started |
+| C3 PolicyEngine + HCS | **Done + tested** — `pnpm policy:smoke` ([docs/C3-POLICY-HCS.md](docs/C3-POLICY-HCS.md)) |
+| C4 Gateway | **Code landed** (merged from remote) |
+| C5–C10 | Not started |
 | Git remote | `https://github.com/dhanushonchain/NeverDown.git` |
 | Maintainer | [ujjwaldubey1](https://github.com/ujjwaldubey1) |
 

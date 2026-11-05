@@ -7,6 +7,7 @@ export type HederaBuyerCredentials = {
   accountId: string;
   privateKey: string;
   network?: "hedera:testnet";
+  maxPaymentTinybars?: string;
 };
 
 /**
@@ -17,19 +18,12 @@ export function createHederaX402HttpClient(creds: HederaBuyerCredentials): x402H
   const network = creds.network ?? "hedera:testnet";
   const key = PrivateKey.fromString(creds.privateKey);
   const signer = createClientHederaSigner(creds.accountId, key, { network });
-  // HBAR (0.0.0) is not a USD "default asset", so spendControls must allow it explicitly.
-  const core = x402Client.fromConfig({
-    schemes: [{ network: "hedera:*", client: new ExactHederaScheme(signer) }],
-    spendControls: {
-      allowedAssets: [
-        {
-          network: "hedera:testnet",
-          asset: "0.0.0",
-          // 1 HBAR in tinybars — well above C1 price (10000 tinybars)
-          maxAmountPerPayment: "100000000",
-        },
-      ],
-    },
+  const core = new x402Client().register("hedera:*", new ExactHederaScheme(signer));
+  // Enable explicit SDK spend controls instead of disabling them entirely.
+  const maxPayment = creds.maxPaymentTinybars ?? process.env.POLICY_CAP_TINYBARS ?? process.env.HEDERA_X402_PRICE_SMALLEST_UNITS ?? "10000";
+  core.setSpendControls({
+    maxAmountPerPayment: maxPayment,
+    allowedAssets: [{ network, asset: "0.0.0", maxAmountPerPayment: maxPayment }],
   });
   return new x402HTTPClient(core);
 }

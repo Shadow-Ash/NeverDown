@@ -5,9 +5,20 @@
   "description": "NeverDown fast recovery plane — RPC gateway (C4)",
   "type": "module",
   "scripts": {
-    "dev": "echo \"@neverdown/gateway: scaffold only (C0) — implement in C4\"",
-    "build": "echo \"@neverdown/gateway: scaffold only (C0)\"",
+    "dev": "node --env-file-if-exists=../../.env --import tsx src/server.ts",
+    "start": "node dist/server.js",
+    "build": "tsc -p tsconfig.build.json",
+    "test": "node --import tsx --test \"test/**/*.test.ts\"",
     "lint": "echo \"ok\"",
-    "typecheck": "echo \"ok\""
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.15.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0"
   }
 }

@@ -1,17 +1,12 @@
-export {
-  PolicyConfigError,
-  loadPolicyRuntimeConfig,
-  loadPolicyState,
-  parseAllowlist,
-  type AllowlistEntry,
-  type PolicyRuntimeConfig,
-  type PolicyState,
-} from "./config.js";
-export {
-  PolicyEngine,
-  type AuthorizeDenied,
-  type AuthorizePaid,
-  type AuthorizePurchaseInput,
-  type AuthorizePurchaseResult,
-  type PolicyEngineDeps,
-} from "./engine.js";
+export { loadPolicyConfig, PolicyConfigError } from "./config.js";
+export { authorizePurchase, verifyAuthorizationBinding, hashJson } from "./engine.js";
+export { BudgetStore, openBudgetStore } from "./budgetStore.js";
+export { securePurchase, SecurePurchaseError } from "./securePurchase.js";
+export type {
+  PolicyConfig,
+  PolicyDecision,
+  DenyReasonCode,
+  AuthorizationRecord,
+  EvidenceEventType,
+  Currency,
+} from "./types.js";

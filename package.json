@@ -10,10 +10,11 @@
     "lint": "pnpm -r run lint",
     "typecheck": "pnpm -r run typecheck",
     "pay:once": "node --env-file-if-exists=.env --import tsx scripts/pay-once.ts",
-    "hcs:create-topic": "node --env-file-if-exists=.env --import tsx scripts/create-hcs-topic.ts",
     "policy:smoke": "node --env-file-if-exists=.env --import tsx scripts/policy-smoke.ts",
+    "hcs:smoke": "node --env-file-if-exists=.env --import tsx scripts/hcs-smoke.ts",
     "test:core": "pnpm --filter @neverdown/core test",
-    "test:sellers": "pnpm --filter @neverdown/sellers test"
+    "test:sellers": "pnpm --filter @neverdown/sellers test",
+    "test:gateway": "pnpm --filter @neverdown/gateway test"
   },
   "devDependencies": {
     "tsx": "^4.20.0"

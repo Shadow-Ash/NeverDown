@@ -1,22 +1,10 @@
-export type {
-  AuditEvent,
-  AuditEventBase,
-  DenyAuditEvent,
-  DenyReason,
-  HederaOperator,
-  PayAuditEvent,
-} from "./types.js";
-export { createOperatorClient } from "./client.js";
 export {
-  HcsError,
-  createAuditTopic,
-  submitAuditMessage,
-  type SubmitAuditInput,
-  type SubmitAuditResult,
-} from "./topic.js";
-export {
-  fetchRecentAuditMessages,
-  mirrorTopicUrl,
-  type DecodedAuditMessage,
-  type MirrorTopicMessage,
-} from "./mirror.js";
+  canonicalize,
+  hashCanonical,
+  safePayload,
+  signEvent,
+  verifyEventSignature,
+} from "./evidence.js";
+export { loadHcsConfig } from "./config.js";
+export { HederaHcsClient } from "./client.js";
+export type { HcsEvent, HcsPublishResult, HcsVerificationResult, HcsAuditAvailability } from "./types.js";

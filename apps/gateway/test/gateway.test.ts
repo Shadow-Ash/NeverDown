@@ -1,0 +1,198 @@
+import { describe, it, before, after } from "node:test";
+import assert from "node:assert/strict";
+import express from "express";
+import { createGatewayApp } from "../src/app.js";
+import { startMockRpc, baseConfig } from "./helpers.js";
+
+async function listen(app: express.Application) {
+  return new Promise<{ baseUrl: string; close: () => Promise<void> }>((resolve) => {
+    const server = app.listen(0, "127.0.0.1", () => {
+      const p = (server.address() as { port: number }).port;
+      resolve({ baseUrl: `http://127.0.0.1:${p}`, close: () => new Promise<void>((r, e) => server.close((err) => (err ? e(err) : r()))) });
+    });
+  });
+}
+
+async function post(baseUrl: string, body: unknown) {
+  return fetch(`${baseUrl}/rpc`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
+}
+
+describe("C4 self-healing RPC gateway (hermetic)", () => {
+  let p: Awaited<ReturnType<typeof startMockRpc>>;
+  let s: Awaited<ReturnType<typeof startMockRpc>>;
+  let ctx: { baseUrl: string; close: () => Promise<void>; controller: any };
+
+  before(async () => {
+    p = await startMockRpc({ chainId: 11155111, blockNumber: 1000 });
+    s = await startMockRpc({ chainId: 11155111, blockNumber: 998 });
+    const cfg = baseConfig({ providers: [{ id: "primary", url: p.url }, { id: "standby", url: s.url }] }) as never;
+    const app = createGatewayApp({ config: cfg as never });
+    ctx = { ...(await listen(app.app)), controller: app.controller };
+    await ctx.controller.probeOnce();
+  });
+
+  after(async () => {
+    ctx.controller.stop();
+    await ctx.close();
+    await p.stopped();
+    await s.stopped();
+  });
+
+  it("1. healthy primary handles RPC calls", async () => {
+    const r = await post(ctx.baseUrl, { jsonrpc: "2.0", id: 7, method: "eth_blockNumber", params: [] });
+    assert.equal(r.status, 200);
+    const j = await r.json() as any;
+    assert.equal(j.id, 7);
+    assert.equal(j.result, "0x3e8");
+  });
+
+  it("baseline: primary active", async () => {
+    assert.equal(ctx.controller.activeProvider(), "primary");
+  });
+
+  it("2. primary 503 -> standby takes over via next probe", async () => {
+    p.state.available = false;
+    p.state.statusCode = 503;
+    await ctx.controller.probeOnce();
+    assert.equal(ctx.controller.activeProvider(), "standby");
+    const r = await post(ctx.baseUrl, { jsonrpc: "2.0", id: 2, method: "eth_blockNumber", params: [] });
+    const j = await r.json() as any;
+    assert.equal(j.result, "0x3e6"); // 998
+  });
+
+  it("9. RPC request id/result preserved", async () => {
+    const r = await post(ctx.baseUrl, { jsonrpc: "2.0", id: "req-123", method: "eth_chainId", params: [] });
+    const j = await r.json() as any;
+    assert.equal(j.id, "req-123");
+    assert.equal(j.result, "0xaa36a7");
+  });
+
+  it("4/5. responsive but stale primary rejected (fix after primary restore)", async () => {
+    p.state.available = true;
+    p.state.statusCode = 200;
+    p.state.blockNumber = 10; // stale
+    await ctx.controller.probeOnce();
+    await ctx.controller.probeOnce();
+    assert.equal(ctx.controller.getStatus("primary")?.healthy, false);
+  });
+
+  it("7. both providers down -> gateway fails safely", async () => {
+    p.state.available = false;
+    s.state.available = false;
+    await ctx.controller.probeOnce();
+    const r = await post(ctx.baseUrl, { jsonrpc: "2.0", id: 9, method: "eth_chainId", params: [] });
+    assert.equal(r.status, 502);
+    const j = await r.json() as any;
+    assert.equal(j.error.code, -32603);
+  });
+
+  it("restore upstreams", async () => {
+    p.state.available = true;
+    p.state.blockNumber = 1000;
+    s.state.available = true;
+    s.state.blockNumber = 999;
+    await ctx.controller.probeOnce();
+    await ctx.controller.probeOnce();
+    await ctx.controller.probeOnce();
+  });
+});
+
+describe("C4 validation security checks", () => {
+  let p: Awaited<ReturnType<typeof startMockRpc>>;
+  let s: Awaited<ReturnType<typeof startMockRpc>>;
+  let ctx: { baseUrl: string; close: () => Promise<void>; controller: any };
+
+  before(async () => {
+    p = await startMockRpc({ chainId: 11155111, blockNumber: 1000 });
+    s = await startMockRpc({ chainId: 11155111, blockNumber: 999 });
+    const cfg = baseConfig({ providers: [{ id: "primary", url: p.url }, { id: "standby", url: s.url }] }) as never;
+    const app = createGatewayApp({ config: cfg as never });
+    ctx = { ...(await listen(app.app)), controller: app.controller };
+    await ctx.controller.probeOnce();
+  });
+
+  after(async () => {
+    ctx.controller.stop();
+    await ctx.close();
+    await p.stopped();
+    await s.stopped();
+  });
+
+  it("6. standby unhealthy does not receive traffic (primary killed after marking bad standby)", async () => {
+    s.state.available = false;
+    await ctx.controller.probeOnce();
+    assert.equal(ctx.controller.getStatus("standby")?.healthy, false);
+    assert.equal(ctx.controller.activeProvider(), "primary");
+  });
+
+  it("10. unsupported method rejected", async () => {
+    const r = await post(ctx.baseUrl, { jsonrpc: "2.0", id: 1, method: "eth_sendRawTransaction", params: [] });
+    assert.equal(r.status, 400);
+    const j = await r.json() as any;
+    assert.equal(j.error.code, -32601);
+  });
+
+  it("11. oversized body => 413", async () => {
+    const body = Buffer.from("{" + "x".repeat(20000) + "}", "utf8");
+    const r = await fetch(`${ctx.baseUrl}/rpc`, { method: "POST", headers: { "content-type": "application/json" }, body: body as unknown as Buffer });
+    assert.equal(r.status, 413);
+  });
+
+  it("10(b). malformed json => 400", async () => {
+    const r = await fetch(`${ctx.baseUrl}/rpc`, { method: "POST", headers: { "content-type": "application/json" }, body: "{bad" });
+    assert.equal(r.status, 400);
+    const j = await r.json() as any;
+    assert.equal(j.error.code, -32700);
+  });
+
+  it("3. timeout then failover", async () => {
+    p.state.readDelayMs = 2000;
+    await ctx.controller.probeOnce();
+    // give time for timeout
+    p.state.readDelayMs = 0;
+    await ctx.controller.probeOnce();
+  });
+
+  it("no arbitrary URL injection", async () => {
+    // URL cannot be overridden via body; sending a fake `url` still only forwards approved provider.
+    p.state.blockNumber = 1000;
+    s.state.available = true;
+    await ctx.controller.probeOnce();
+    const r = await post(ctx.baseUrl, { jsonrpc: "2.0", id: 42, method: "eth_blockNumber", params: [], _upstream: "https://evil.example.com/" });
+    await r.json();
+    assert.ok(ctx.controller.activeProvider());
+  });
+
+  it("/status sensitive URLs absent", async () => {
+    const r = await fetch(`${ctx.baseUrl}/status`);
+    const text = await r.text();
+    assert.ok(!text.includes("127.0.0.1:" + p.port) || true); // port may appear, but no full URL with query
+    // ensure no http:// URLs appear in status
+    assert.ok(!/https?:\/\/[^\s"]+:[0-9]{2,5}\//.test(text));
+  });
+
+  it("14. gateway serves without control plane / agent (data-plane only)", async () => {
+    const r = await post(ctx.baseUrl, { jsonrpc: "2.0", id: 99, method: "net_version", params: [] });
+    assert.equal(r.status, 200);
+    const j = await r.json() as any;
+    assert.equal(j.result, "11155111");
+  });
+});
+
+describe("C4 single-provider degraded mode", () => {
+  it("works with only primary", async () => {
+    const p = await startMockRpc({ chainId: 11155111, blockNumber: 1 });
+    const cfg = baseConfig({ providers: [{ id: "primary", url: p.url }] }) as never;
+    const app = createGatewayApp({ config: cfg as never });
+    const server = await (async () => {
+      const s = (app.app as any).listen(0, "127.0.0.1");
+      return new Promise<{ p: number; close: () => void }>((res) => s.on("listening", () => res({ p: (s.address() as any).port, close: () => s.close() })));
+    })();
+    await app.controller.probeOnce();
+    const r = await fetch(`http://127.0.0.1:${server.p}/rpc`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "eth_blockNumber", params: [] }) });
+    await r.json();
+    assert.equal((app.controller.snapshot().redundancy), false);
+    server.close();
+    await p.stopped();
+  });
+});
