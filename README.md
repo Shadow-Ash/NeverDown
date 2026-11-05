@@ -12,6 +12,8 @@ It is **not** “an RPC product.” RPC is only the **first demo vertical** (a c
 It is **not** a chatbot that “tries to fix prod.”  
 It is **general dependency resilience**: you attach NeverDown to a failure class, encode the playbook, and the two planes execute it.
 
+**Coding agents / teammates:** start at **[AGENTS.md](AGENTS.md)** and **[docs/AGENT-CONTEXT.md](docs/AGENT-CONTEXT.md)** (progress, flow, next chunk, anti-RPC-only framing).
+
 ---
 
 ## Docs map
@@ -19,6 +21,8 @@ It is **general dependency resilience**: you attach NeverDown to a failure class
 | Doc | What’s inside |
 |---|---|
 | **This README** | Product, prizes, demo, status, quick start |
+| **[AGENTS.md](AGENTS.md)** | Short agent entrypoint |
+| **[docs/AGENT-CONTEXT.md](docs/AGENT-CONTEXT.md)** | Full handoff: vision, flow, status, next = C6 |
 | **[docs/BUILD-CHUNKS.md](docs/BUILD-CHUNKS.md)** | **Detailed C0→C10 steps, gates, file ownership** |
 | **[docs/C2-PAY-ONCE.md](docs/C2-PAY-ONCE.md)** | C2 buyer: env, `pnpm pay:once`, HashScan |
 | **[docs/C3-POLICY-HCS.md](docs/C3-POLICY-HCS.md)** | C3 PolicyEngine + HCS: topic, smoke, Mirror |
@@ -238,7 +242,8 @@ Fill `.env` before C1/C2 (Hedera, facilitator, later Arkiv/ENS). **Never commit 
 | C3 PolicyEngine + HCS | **Done + tested** — `pnpm policy:smoke` ([docs/C3-POLICY-HCS.md](docs/C3-POLICY-HCS.md)) |
 | C4 Gateway | **Code landed** (merged from remote) |
 | C5 Arkiv offers | **Code done** — set `ARKIV_*`, then `pnpm arkiv:seed` / `arkiv:query` ([docs/C5-ARKIV.md](docs/C5-ARKIV.md)) |
-| C6–C10 | Not started |
+| **Next → C6** | ENSv2 allowlist (not started) |
+| C7–C10 | Not started |
 | Git remote | `https://github.com/dhanushonchain/NeverDown.git` |
 | Maintainer | [ujjwaldubey1](https://github.com/ujjwaldubey1) |
 

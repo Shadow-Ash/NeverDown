@@ -4,7 +4,8 @@ Open the editable diagram: **[neverdown-architecture.excalidraw](./neverdown-arc
 (excalidraw.com or the VS Code Excalidraw extension).
 
 Chunk-by-chunk implementation: **[BUILD-CHUNKS.md](./BUILD-CHUNKS.md)**  
-Product overview: **[../README.md](../README.md)**
+Product overview: **[../README.md](../README.md)**  
+Coding-agent handoff: **[../AGENTS.md](../AGENTS.md)** · **[AGENT-CONTEXT.md](./AGENT-CONTEXT.md)**
 
 ---
 

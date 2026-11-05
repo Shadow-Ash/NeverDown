@@ -3,6 +3,9 @@
 **Rule:** build one chunk, pass its gate, commit, then start the next.  
 Do **not** start UI (C9) before rails (C1–C7) and agent (C8) work.
 
+**Agents / new chat context:** [../AGENTS.md](../AGENTS.md) · [AGENT-CONTEXT.md](./AGENT-CONTEXT.md)  
+(RPC is a **demo vertical**, not the product — see AGENT-CONTEXT before coding.)
+
 | Diagrams | [neverdown-architecture.md](./neverdown-architecture.md) · [neverdown-architecture.excalidraw](./neverdown-architecture.excalidraw) |
 | Product README | [../README.md](../README.md) |
 
