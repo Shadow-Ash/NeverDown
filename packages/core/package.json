@@ -20,10 +20,12 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
+    "@arkiv-network/sdk": "^1.0.1",
     "@hiero-ledger/proto": "2.32.0",
     "@hiero-ledger/sdk": "2.90.1",
     "@x402/core": "2.30.0",
-    "@x402/hedera": "2.30.0"
+    "@x402/hedera": "2.30.0",
+    "viem": "^2.57.16"
   },
   "devDependencies": {
     "@types/node": "^22.15.0",

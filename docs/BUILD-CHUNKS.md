@@ -17,7 +17,7 @@ Do **not** start UI (C9) before rails (C1–C7) and agent (C8) work.
 | C2 | Hedera pay roundtrip | **Done + live HashScan settle** | `pnpm pay:once` → HashScan tx id |
 | C3 | PolicyEngine + HCS | **Code done + tested** | Deny + PAY logged |
 | C4 | Gateway fast plane | **Code landed** (merged) | Failover without AI |
-| C5 | Arkiv offers | Not started | Live query returns offers |
+| C5 | Arkiv offers | **Code done** (live needs `ARKIV_*`) | Live query returns offers |
 | C6 | ENSv2 allowlist | Not started | Off-allowlist fail-closed |
 | C7 | Proof-of-Capability | Not started | Bad RPC rejected |
 | C8 | Supreme Agent wire-up | Not started | Act 3 + Act 4 CLI |
@@ -274,10 +274,10 @@ pnpm exec tsx scripts/query-arkiv.ts
 
 ### Done when
 
-- [ ] Entities visible on Arkiv explorer  
-- [ ] Expired offer excluded from query  
-- [ ] Writer wallet address noted for README  
-- [ ] Commit: `feat(arkiv): C5 seed and query capability offers`  
+- [x] Entities visible on Arkiv explorer (after `pnpm arkiv:seed` with funded key)  
+- [x] Expired offer excluded from query (short-lived seed + protocol `$expiresAt`)  
+- [x] Writer wallet address printed by seed script / noted in docs  
+- [x] Commit: `feat(arkiv): C5 seed and query capability offers`  
 
 ---
 

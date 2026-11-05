@@ -22,6 +22,7 @@ It is **general dependency resilience**: you attach NeverDown to a failure class
 | **[docs/BUILD-CHUNKS.md](docs/BUILD-CHUNKS.md)** | **Detailed C0→C10 steps, gates, file ownership** |
 | **[docs/C2-PAY-ONCE.md](docs/C2-PAY-ONCE.md)** | C2 buyer: env, `pnpm pay:once`, HashScan |
 | **[docs/C3-POLICY-HCS.md](docs/C3-POLICY-HCS.md)** | C3 PolicyEngine + HCS: topic, smoke, Mirror |
+| **[docs/C5-ARKIV.md](docs/C5-ARKIV.md)** | C5 Arkiv offers: seed, query, schema |
 | **[docs/neverdown-architecture.md](docs/neverdown-architecture.md)** | Planes, components, flows, security honesty |
 | **[docs/neverdown-architecture.excalidraw](docs/neverdown-architecture.excalidraw)** | Editable architecture diagram |
 
@@ -236,7 +237,8 @@ Fill `.env` before C1/C2 (Hedera, facilitator, later Arkiv/ENS). **Never commit 
 | C2 x402 pay-once | **Done + live HashScan settle** ([docs/C2-PAY-ONCE.md](docs/C2-PAY-ONCE.md)) |
 | C3 PolicyEngine + HCS | **Done + tested** — `pnpm policy:smoke` ([docs/C3-POLICY-HCS.md](docs/C3-POLICY-HCS.md)) |
 | C4 Gateway | **Code landed** (merged from remote) |
-| C5–C10 | Not started |
+| C5 Arkiv offers | **Code done** — set `ARKIV_*`, then `pnpm arkiv:seed` / `arkiv:query` ([docs/C5-ARKIV.md](docs/C5-ARKIV.md)) |
+| C6–C10 | Not started |
 | Git remote | `https://github.com/dhanushonchain/NeverDown.git` |
 | Maintainer | [ujjwaldubey1](https://github.com/ujjwaldubey1) |
 

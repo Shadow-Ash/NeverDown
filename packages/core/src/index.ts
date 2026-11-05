@@ -11,3 +11,4 @@ export function neverdownIdentity(): string {
 export * from "./x402/index.js";
 export * from "./policy/index.js";
 export * from "./hcs/index.js";
+export * from "./arkiv/index.js";
