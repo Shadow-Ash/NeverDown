@@ -1,8 +1,12 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { createHermeticToolBelt, runAgentScenario } from "../src/agent/index.js";
+import { createHermeticToolBelt, createLiveToolBelt, runAgentScenario } from "../src/agent/index.js";
 
 describe("C8 supreme agent (hermetic)", () => {
+  it("live seller resolution fails closed without an ENS allowlist", async () => {
+    const tools = createLiveToolBelt({ ENS_RPC_URL: "https://example.com", ENS_ALLOWLIST_NAMES: "", POLICY_DB_PATH: ":memory:" });
+    await assert.rejects(tools.resolve_seller({ ensName: "unknown.eth", expectedPayTo: "0.0.1" }), /ENS_ALLOWLIST_NAMES/);
+  });
   it("probes the public URL and installs only the RPC URL after settlement", async () => {
     const tools = createHermeticToolBelt();
     const probed: string[] = [];

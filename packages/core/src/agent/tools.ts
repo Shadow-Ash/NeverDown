@@ -193,7 +193,8 @@ export function createLiveToolBelt(env: NodeJS.ProcessEnv = process.env): AgentT
         .split(/[,\s]+/)
         .map((x) => x.trim())
         .filter(Boolean);
-      return resolveAndValidateEnsSeller(ensName, expectedPayTo, rpc, allow.length ? allow : undefined);
+      if (allow.length === 0) throw new Error("ENS_ALLOWLIST_NAMES required for live seller resolution");
+      return resolveAndValidateEnsSeller(ensName, expectedPayTo, rpc, allow);
     },
     async proof_of_capability(input) {
       return proofOfCapability({
