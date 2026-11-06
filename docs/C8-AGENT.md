@@ -31,6 +31,8 @@ For live procurement, set `PAYMENT_WORKER_ENV_FILE` to a `0600` file containing 
 
 The coordinator stores incident claims and receipts at `INCIDENT_DB_PATH` (default `neverdown-incidents.sqlite`). A `STARTED` incident left by a crash or an `UNCERTAIN` payment is never retried automatically; inspect the worker ledger and Hedera evidence before any manual retry. The gateway keeps serving its current route if the coordinator is stopped.
 
+The local console exposes persisted evidence through `GET /api/incidents` and `GET /api/incidents/{incidentId}`. List responses contain status summaries; detail includes the redacted receipt. The console binds to `127.0.0.1` for the local demo.
+
 ## Code
 
 `packages/core/src/agent/` · `scripts/agent-demo.ts`

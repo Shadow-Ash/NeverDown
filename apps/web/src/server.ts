@@ -2,11 +2,14 @@ import { createServer, type IncomingMessage, type ServerResponse } from "node:ht
 import { spawn } from "node:child_process";
 import { readFileSync, existsSync } from "node:fs";
 import { join, resolve, extname } from "node:path";
+import { IncidentLedger } from "../../../packages/core/src/agent/coordinator.js";
+import { evidenceResponse } from "./evidence.js";
 
 const PORT = Number(process.env.WEB_PORT ?? 3000);
 const GATEWAY_URL = (process.env.GATEWAY_URL?.trim() || "http://localhost:8787").replace(/\/$/, "");
 const ROOT = resolve(process.cwd(), "..", "..");
 const PUBLIC = join(process.cwd(), "public");
+const incidentLedger = new IncidentLedger(resolve(ROOT, process.env.INCIDENT_DB_PATH?.trim() || "neverdown-incidents.sqlite"));
 
 function send(res: ServerResponse, status: number, body: any, contentType = "application/json") {
   res.writeHead(status, { "content-type": contentType });
@@ -40,6 +43,12 @@ async function fetchGateway(path: string) {
 }
 
 async function handleApi(req: IncomingMessage, res: ServerResponse, pathname: string) {
+  if (req.method === "GET" && (pathname === "/api/incidents" || pathname.startsWith("/api/incidents/"))) {
+    const result = evidenceResponse(pathname, incidentLedger);
+    res.setHeader("Cache-Control", "no-store");
+    send(res, result.status, result.body);
+    return;
+  }
   if (pathname === "/api/status" && req.method === "GET") {
     try {
       const [ready, status] = await Promise.all([fetchGateway("/ready"), fetchGateway("/status")]);
@@ -69,7 +78,7 @@ async function handleApi(req: IncomingMessage, res: ServerResponse, pathname: st
       if (start >= 0 && end > start) {
         try { parsed = JSON.parse(out.slice(start, end + 1)); } catch { parsed = null; }
       }
-      send(res, code === 0 ? 200 : 500, { scenario, exitCode: code, receipt: parsed, output: out });
+      send(res, code === 0 ? 200 : 500, { scenario, mode: "hermetic", exitCode: code, receipt: parsed, output: out });
     });
     return;
   }
@@ -112,7 +121,7 @@ createServer(async (req, res) => {
     return;
   }
   send(res, 404, "not found", "text/plain");
-}).listen(PORT, () => {
+}).listen(PORT, "127.0.0.1", () => {
   console.log(`NeverDown console listening on http://localhost:${PORT}`);
   console.log(`Gateway: ${GATEWAY_URL}`);
 });

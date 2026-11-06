@@ -37,3 +37,15 @@ it("keeps uncertain purchases from automatic retry", async () => {
     assert.equal(ledger.get("r:INC-1")?.status, "UNCERTAIN");
   } finally { ledger.close(); }
 });
+
+it("lists persisted evidence without exposing an entitlement token", () => {
+  const ledger = new IncidentLedger(":memory:");
+  try {
+    assert.equal(ledger.claim("runtime-a:INC-2", "runtime-a:EVT-2"), true);
+    ledger.finish("runtime-a:INC-2", "COMPLETED", { success: true, purchase: { status: "SETTLED", entitlementToken: "private-secret-token" }, selectedOffer: { pricetinybars: 10n } });
+    const rows = ledger.list(10);
+    assert.equal(rows.length, 1);
+    assert.equal(rows[0]?.status, "COMPLETED");
+    assert.ok(!JSON.stringify(rows).includes("private-secret-token"));
+  } finally { ledger.close(); }
+});

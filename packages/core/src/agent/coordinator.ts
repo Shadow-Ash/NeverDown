@@ -31,6 +31,12 @@ export class IncidentLedger {
     return { incidentId: row.incident_id, eventId: row.event_id, status: row.status, createdAt: row.created_at, updatedAt: row.updated_at, receipt: row.receipt_json ? JSON.parse(row.receipt_json) : null };
   }
 
+  list(limit = 20): IncidentRecord[] {
+    const capped = Math.max(1, Math.min(100, Math.trunc(limit)));
+    const rows = this.db.prepare("SELECT incident_id FROM incidents ORDER BY created_at DESC, rowid DESC LIMIT ?").all(capped) as Array<{ incident_id: string }>;
+    return rows.map((row) => this.get(row.incident_id)!).filter(Boolean);
+  }
+
   close(): void { this.db.close(); }
 }
 
