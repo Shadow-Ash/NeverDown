@@ -164,10 +164,10 @@ html[data-theme="dark"] { --bg:#2a2529; --surface:#242023; --card:#f3f0e7; --car
       <button id="nextCard" type="button">Next</button>
     </nav>
   </div>
-  <aside class="chat-panel" aria-label="NeverDown guide">
+  <aside class="chat-panel" aria-label="Supreme Agent chat">
     <div class="chat-header">
-      <span class="section-tag">Operator guide</span>
-      <h2>Ask NeverDown</h2>
+      <span class="section-tag">Read-only guide</span>
+      <h2>Supreme Agent</h2>
       <p class="muted">Ask about recovery, policy, and proof. Chat is read-only.</p>
     </div>
     <div id="chatMessages" class="chat-messages" role="log" aria-label="Chat messages" aria-live="polite" aria-relevant="additions"></div>
@@ -177,7 +177,7 @@ html[data-theme="dark"] { --bg:#2a2529; --surface:#242023; --card:#f3f0e7; --car
       <button type="button" data-chat-prompt="Show me the evidence">Evidence</button>
     </div>
     <form id="chatForm" class="chat-form">
-      <label for="chatInput" class="sr-only">Message the NeverDown guide</label>
+      <label for="chatInput" class="sr-only">Message Supreme Agent</label>
       <input id="chatInput" name="message" type="text" maxlength="500" autocomplete="off" placeholder="Ask about this incident…" required>
       <button id="chatSend" type="submit">Send</button>
     </form>
@@ -283,7 +283,7 @@ chatForm.addEventListener('submit', event => {
 document.querySelectorAll('[data-chat-prompt]').forEach(button => {
   button.addEventListener('click', () => { void sendChatQuestion(button.dataset.chatPrompt || ''); });
 });
-addChatMessage('assistant', 'Hi. I can explain each step and read live status or evidence when you run the local console. What would you like to know?');
+addChatMessage('assistant', 'Supreme Agent guide here. I can explain each step and read live status or evidence when you run the local console. What would you like to know?');
 const cards = Array.from(document.querySelectorAll('.card-flow .card'));
 const previousCard = document.getElementById('previousCard');
 const nextCard = document.getElementById('nextCard');
