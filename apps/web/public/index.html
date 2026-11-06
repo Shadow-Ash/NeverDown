@@ -8,8 +8,8 @@
     @font-face { font-family:"Redaction 50"; src:url("/fonts/Redaction50-Regular.woff2") format("woff2"); font-weight:400; font-style:normal; font-display:swap; }
     @font-face { font-family:"Redaction 50"; src:url("/fonts/Redaction50-Bold.woff2") format("woff2"); font-weight:700; font-style:normal; font-display:swap; }
     @font-face { font-family:"Redaction 50"; src:url("/fonts/Redaction50-Italic.woff2") format("woff2"); font-weight:400; font-style:italic; font-display:swap; }
-    :root { --bg:#f3f0e7; --surface:#f0ede4; --card:#2a2529; --card-text:#f3f0e7; --border:#d9d6cf; --muted:#5f5a54; --text:#1e1e1e; --accent:#1e1e1e; --success:#1f8a6a; --warn:#a87b1e; --bad:#c94b4b; --card-border:#51484e; --card-shadow:0 20px 42px -24px rgba(31,22,24,.48),0 8px 16px -12px rgba(31,22,24,.36); --card-shadow-hover:0 28px 50px -22px rgba(31,22,24,.55),0 10px 20px -12px rgba(31,22,24,.42); }
-html[data-theme="dark"] { --bg:#2a2529; --surface:#242023; --card:#f3f0e7; --card-text:#2a2529; --border:#1e1a1e; --muted:#9d9891; --text:#f3f0e7; --accent:#f3f0e7; --success:#45d19b; --warn:#f4bf61; --bad:#ff6b6b; --card-border:#d8d0c6; --card-shadow:0 22px 46px -24px rgba(0,0,0,.64),0 8px 18px -12px rgba(0,0,0,.54); --card-shadow-hover:0 30px 54px -22px rgba(0,0,0,.75),0 12px 22px -12px rgba(0,0,0,.62); }
+    :root { --bg:#f3f0e7; --surface:#f0ede4; --card:#2a2529; --card-text:#f3f0e7; --card-muted:#d8d0c8; --border:#d9d6cf; --muted:#5f5a54; --text:#1e1e1e; --accent:#1e1e1e; --accent-text:#f3f0e7; --success:#1f8a6a; --warn:#a87b1e; --bad:#c94b4b; --card-border:#51484e; --card-shadow:0 20px 42px -24px rgba(31,22,24,.48),0 8px 16px -12px rgba(31,22,24,.36); --card-shadow-hover:0 28px 50px -22px rgba(31,22,24,.55),0 10px 20px -12px rgba(31,22,24,.42); }
+html[data-theme="dark"] { --bg:#2a2529; --surface:#242023; --card:#f3f0e7; --card-text:#2a2529; --card-muted:#514b48; --border:#1e1a1e; --muted:#b4aca5; --text:#f3f0e7; --accent:#f3f0e7; --accent-text:#2a2529; --success:#45d19b; --warn:#f4bf61; --bad:#ff6b6b; --card-border:#d8d0c6; --card-shadow:0 22px 46px -24px rgba(0,0,0,.64),0 8px 18px -12px rgba(0,0,0,.54); --card-shadow-hover:0 30px 54px -22px rgba(0,0,0,.75),0 12px 22px -12px rgba(0,0,0,.62); }
 
     * { box-sizing:border-box; font-family:"Redaction 50", Georgia, serif; }
     body { margin:0; background:var(--bg); color:var(--text); }
@@ -28,8 +28,9 @@ html[data-theme="dark"] { --bg:#2a2529; --surface:#242023; --card:#f3f0e7; --car
     .card > button { margin-top:8px; }
     .metric { font-size:1.5rem; font-weight:700; }
     .muted { color:var(--muted); font-size:0.9rem; }
+    .card .muted, .card label { color:var(--card-muted); }
     button { border:0; border-radius:10px; padding:10px 14px; cursor:pointer; font-weight:700; }
-    .primary { background:var(--accent); color:#f3f0e7; }
+    .primary { background:var(--accent); color:var(--accent-text); }
     .danger { background:var(--bad); color:#200505; }
     .ok { background:var(--success); color:#04120b; }
     label { display:block; margin-bottom:6px; color:var(--muted); font-size:.9rem; }
@@ -47,9 +48,9 @@ html[data-theme="dark"] { --bg:#2a2529; --surface:#242023; --card:#f3f0e7; --car
     .theme-curtain.rising { transform-origin:bottom; transform:scaleY(0); transition:transform 550ms cubic-bezier(.76,0,.24,1); }
     .theme-toggle:focus-visible { outline:2px solid var(--text); outline-offset:3px; }
     @media (prefers-reduced-motion: reduce) { .theme-curtain.falling, .theme-curtain.rising, .card { transition:none; } .card:hover { transform:none; } }
-    pre { white-space:pre-wrap; word-break:break-word; margin:8px 0 0; font-size:.85rem; color:#d9d5cc; }
+    pre { white-space:pre-wrap; word-break:break-word; margin:8px 0 0; font-size:.85rem; color:var(--card-text); }
     .step { margin:8px 0; padding:10px 14px; border-left:4px solid var(--border); border-radius:8px; background:var(--surface); color:var(--text); }
-    .pass { border-color:var(--good); }
+    .pass { border-color:var(--success); }
     .fail { border-color:var(--bad); }
     @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
     @media (max-width: 700px) { .site-header { gap:8px; padding:12px 16px; } .brand span { display:none; } .site-nav { justify-content:flex-start; overflow-x:auto; scrollbar-width:none; } .site-nav::-webkit-scrollbar { display:none; } .site-nav a { padding:8px 6px; font-size:.8rem; } }
