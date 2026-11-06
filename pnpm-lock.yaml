@@ -75,7 +75,7 @@ importers:
   apps/web:
     dependencies:
       '@neverdown/core':
-        specifier: workspace:*
+        specifier: 0.0.0
         version: link:../../packages/core
     devDependencies:
       '@types/node':

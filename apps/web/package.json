@@ -8,15 +8,16 @@
     "build": "tsc -p tsconfig.build.json",
     "lint": "node --check ../../scripts/smoke-web.mjs",
     "typecheck": "tsc -p tsconfig.json",
-    "start": "node dist/server.js",
+    "start": "node dist/apps/web/src/server.js",
     "test": "node --import tsx --test test/*.test.ts"
   },
   "dependencies": {
-    "@neverdown/core": "workspace:*"
+    "@neverdown/core": "0.0.0"
   },
   "devDependencies": {
     "tsx": "^4.20.0",
     "typescript": "^5.9.0",
     "@types/node": "^22.15.0"
-  }
+  },
+  "type": "module"
 }

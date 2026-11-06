@@ -5,11 +5,11 @@
   "description": "NeverDown — Autonomous Resilience Operator for Web3",
   "packageManager": "pnpm@9.15.0",
   "scripts": {
-    "build": "pnpm -r run build",
+    "build": "npm run build --workspace=@neverdown/core && npm run build --workspace=@neverdown/sellers && npm run build --workspace=@neverdown/gateway && npm run build --workspace=@neverdown/web",
     "heroku-postbuild": "pnpm --filter @neverdown/sellers build",
-    "dev": "pnpm web:dev",
-    "lint": "pnpm -r run lint",
-    "typecheck": "pnpm -r run typecheck",
+    "dev": "npm run dev --workspace=@neverdown/web",
+    "lint": "npm run lint --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
     "pay:once": "node scripts/run-with-env.mjs pay-once scripts/pay-once.ts",
     "policy:smoke": "node scripts/run-with-env.mjs policy-smoke scripts/policy-smoke.ts",
     "hcs:smoke": "node scripts/run-with-env.mjs hcs-smoke scripts/hcs-smoke.ts",
@@ -27,22 +27,20 @@
     "agent:deny-live": "node scripts/run-with-env.mjs agent scripts/agent-demo.ts --scenario deny --live",
     "coordinator:dev": "node scripts/run-with-env.mjs agent scripts/incident-coordinator.ts",
     "coordinator:live": "node scripts/run-with-env.mjs agent scripts/incident-coordinator.ts",
-    "web:dev": "pnpm --filter @neverdown/web dev",
-    "test:core": "pnpm --filter @neverdown/core test",
-    "test:sellers": "pnpm --filter @neverdown/sellers test",
-    "test:gateway": "pnpm --filter @neverdown/gateway test",
+    "web:dev": "npm run dev --workspace=@neverdown/web",
+    "test:core": "npm run test --workspace=@neverdown/core",
+    "test:sellers": "npm run test --workspace=@neverdown/sellers",
+    "test:gateway": "npm run test --workspace=@neverdown/gateway",
     "dev:all": "pnpm -r --parallel run dev",
-    "dev:stack": "concurrently -k -n gateway,seller,web -c blue,green,magenta \"pnpm gateway:live\" \"pnpm seller:live\" \"pnpm web:dev\"",
-    "start": "pnpm --filter @neverdown/web start",
+    "start": "npm run start --workspace=@neverdown/web",
     "build:web": "pnpm --filter @neverdown/web build",
-    "test": "pnpm test:core && pnpm test:sellers && pnpm test:gateway",
-    "test:web": "pnpm --filter @neverdown/web test",
+    "test": "npm run test --workspace=@neverdown/core && npm run test --workspace=@neverdown/sellers && npm run test --workspace=@neverdown/gateway && npm run test --workspace=@neverdown/web",
+    "test:web": "npm run test --workspace=@neverdown/web",
     "test:smoke": "node scripts/smoke-web.mjs",
     "check:local": "pnpm typecheck && pnpm lint && pnpm test"
   },
   "devDependencies": {
-    "tsx": "^4.20.0",
-    "concurrently": "^9.2.1"
+    "tsx": "^4.20.0"
   },
   "pnpm": {
     "overrides": {
@@ -52,5 +50,9 @@
   },
   "engines": {
     "node": ">=20"
-  }
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ]
 }

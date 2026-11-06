@@ -18,21 +18,27 @@ function send(res: ServerResponse, status: number, body: unknown, contentType = 
 }
 
 const MAX_BODY_BYTES = 16 * 1024;
+const MAX_BODY_BYTES = 16 * 1024;
 function readBody(req: IncomingMessage): Promise<Record<string, unknown>> {
   return new Promise((resolveBody, rejectBody) => {
     let data = "";
     let size = 0;
+    let tooLarge = false;
     req.on("data", (chunk: Buffer | string) => {
       const part = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
       size += part.length;
       if (size > MAX_BODY_BYTES) {
-        rejectBody(Object.assign(new Error("request body too large"), { statusCode: 413 }));
-        req.destroy();
+        tooLarge = true;
+        data = "";
         return;
       }
-      data += part.toString("utf8");
+      if (!tooLarge) data += part.toString("utf8");
     });
     req.on("end", () => {
+      if (tooLarge) {
+        rejectBody(Object.assign(new Error("request body too large"), { statusCode: 413 }));
+        return;
+      }
       if (!data) { resolveBody({}); return; }
       try {
         const parsed: unknown = JSON.parse(data);
