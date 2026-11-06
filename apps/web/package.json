@@ -5,9 +5,11 @@
   "description": "NeverDown console + five-act demo UI (C9)",
   "scripts": {
     "dev": "node ../../scripts/run-with-env.mjs web src/server.ts",
-    "build": "echo \"@neverdown/web: static TypeScript server (C9)\"",
-    "lint": "echo \"ok\"",
-    "typecheck": "tsc -p tsconfig.json"
+    "build": "tsc -p tsconfig.build.json",
+    "lint": "node --check ../../scripts/smoke-web.mjs",
+    "typecheck": "tsc -p tsconfig.json",
+    "start": "node dist/server.js",
+    "test": "node --import tsx --test test/*.test.ts"
   },
   "dependencies": {
     "@neverdown/core": "workspace:*"

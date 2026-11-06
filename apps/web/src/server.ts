@@ -11,19 +11,41 @@ const ROOT = resolve(process.cwd(), "..", "..");
 const PUBLIC = join(process.cwd(), "public");
 const incidentLedger = new IncidentLedger(resolve(ROOT, process.env.INCIDENT_DB_PATH?.trim() || "neverdown-incidents.sqlite"));
 
-function send(res: ServerResponse, status: number, body: any, contentType = "application/json") {
-  res.writeHead(status, { "content-type": contentType });
+function send(res: ServerResponse, status: number, body: unknown, contentType = "application/json") {
+  res.writeHead(status, { "content-type": contentType, "x-content-type-options": "nosniff", "referrer-policy": "no-referrer" });
   if (typeof body === "string" || Buffer.isBuffer(body)) res.end(body);
   else res.end(JSON.stringify(body));
 }
 
-function readBody(req: IncomingMessage): Promise<any> {
-  return new Promise((resolve) => {
+const MAX_BODY_BYTES = 16 * 1024;
+function readBody(req: IncomingMessage): Promise<Record<string, unknown>> {
+  return new Promise((resolveBody, rejectBody) => {
     let data = "";
-    req.on("data", (chunk) => (data += chunk));
-    req.on("end", () => {
-      try { resolve(data ? JSON.parse(data) : {}); } catch { resolve({ raw: data }); }
+    let size = 0;
+    req.on("data", (chunk: Buffer | string) => {
+      const part = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+      size += part.length;
+      if (size > MAX_BODY_BYTES) {
+        rejectBody(Object.assign(new Error("request body too large"), { statusCode: 413 }));
+        req.destroy();
+        return;
+      }
+      data += part.toString("utf8");
     });
+    req.on("end", () => {
+      if (!data) { resolveBody({}); return; }
+      try {
+        const parsed: unknown = JSON.parse(data);
+        if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+          rejectBody(Object.assign(new Error("request body must be a JSON object"), { statusCode: 400 }));
+          return;
+        }
+        resolveBody(parsed as Record<string, unknown>);
+      } catch {
+        rejectBody(Object.assign(new Error("invalid JSON request body"), { statusCode: 400 }));
+      }
+    });
+    req.on("error", rejectBody);
   });
 }
 
@@ -72,9 +94,16 @@ async function handleApi(req: IncomingMessage, res: ServerResponse, pathname: st
   }
 
   if (pathname === "/api/run-agent" && req.method === "POST") {
-    const body = await readBody(req);
-    const scenario = body.scenario === "deny" ? "deny" : "procure";
-    const live = process.env.AGENT_LIVE === "true" || body.live === true;
+    let body: Record<string, unknown>;
+    try { body = await readBody(req); }
+    catch (error) {
+      const status = typeof error === "object" && error !== null && "statusCode" in error ? Number((error as { statusCode: unknown }).statusCode) : 400;
+      if (!res.destroyed) send(res, status, { error: error instanceof Error ? error.message : "invalid request body" });
+      return;
+    }
+    const scenario = body.scenario === "deny" ? "deny" : body.scenario === "procure" || body.scenario === undefined ? "procure" : null;
+    if (!scenario) { send(res, 400, { error: "scenario must be 'procure' or 'deny'" }); return; }
+    const live = process.env.AGENT_LIVE === "true";
     const script = [join(ROOT, "scripts/run-with-env.mjs"), "agent", "scripts/agent-demo.ts", "--scenario", scenario, ...(live ? ["--live"] : [])];
     const agent = spawn(process.execPath, script, {
       cwd: ROOT,
@@ -102,7 +131,13 @@ async function handleApi(req: IncomingMessage, res: ServerResponse, pathname: st
       send(res, 412, { error: "Enable GATEWAY_INTERNAL_API=true and set GATEWAY_INTERNAL_TOKEN to use inject hooks." });
       return;
     }
-    const body = await readBody(req);
+    let body: Record<string, unknown>;
+    try { body = await readBody(req); }
+    catch (error) {
+      const status = typeof error === "object" && error !== null && "statusCode" in error ? Number((error as { statusCode: unknown }).statusCode) : 400;
+      if (!res.destroyed) send(res, status, { error: error instanceof Error ? error.message : "invalid request body" });
+      return;
+    }
     try {
       const r = await fetch(`${GATEWAY_URL}/_internal/install-standby`, {
         method: "POST",

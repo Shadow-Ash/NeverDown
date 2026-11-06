@@ -29,6 +29,10 @@
     .site-nav a { display:inline-flex; align-items:center; min-height:44px; text-decoration:none; font-size:.92rem; white-space:nowrap; }
     .site-nav a:hover { text-decoration:underline; text-underline-offset:4px; }
     .header-actions { display:flex; align-items:center; gap:16px; }
+    .menu-toggle { display:none; width:40px; height:40px; padding:9px; border:1px solid var(--line); border-radius:10px; background:transparent; color:var(--text); cursor:pointer; }
+    .menu-toggle span { display:block; width:19px; height:2px; margin:4px auto; background:currentColor; transition:transform .18s ease; }
+    .menu-toggle[aria-expanded="true"] span:first-child { transform:translateY(3px) rotate(45deg); }
+    .menu-toggle[aria-expanded="true"] span:last-child { transform:translateY(-3px) rotate(-45deg); }
     .header-link { display:inline-flex; align-items:center; justify-content:center; min-height:40px; padding:8px 16px; border-radius:10px; background:var(--text); color:var(--bg); text-decoration:none; font-weight:700; font-size:.9rem; white-space:nowrap; }
     .header-link:hover, .button-primary:hover { filter:brightness(1.15); }
     .theme-toggle { width:40px; height:40px; display:grid; place-items:center; border:1px solid var(--line); border-radius:50%; background:var(--panel); color:var(--panel-text); cursor:pointer; flex:none; }
@@ -79,12 +83,12 @@
     .scope-row strong { font-size:1.08rem; }
     .scope-row span { color:var(--muted); font-size:.85rem; white-space:nowrap; }
     .last-section { padding-bottom:100px; }
-    .last-section .section-heading { max-width:none; font-size:clamp(.95rem,3.5vw,3rem); letter-spacing:-.05em; white-space:nowrap; }
+    .last-section .section-heading { max-width:900px; font-size:clamp(2.25rem,4.6vw,4.4rem); letter-spacing:-.05em; white-space:normal; }
     .site-footer { display:flex; justify-content:space-between; gap:24px; padding-top:26px; padding-bottom:32px; border-top:1px solid var(--line); color:var(--muted); font-size:.9rem; }
     .site-footer p { margin:0; }
     .site-footer a:hover { color:var(--text); }
     @media (max-width:1000px) { .hero { grid-template-columns:1fr; min-height:0; gap:44px; } .operator-card { max-width:640px; } .process { grid-template-columns:repeat(2,minmax(0,1fr)); row-gap:32px; } .process article:nth-child(3) { padding-left:0; border-left:0; } }
-    @media (max-width:700px) { .shell { padding-left:16px; padding-right:16px; } .site-header { gap:14px; } .site-nav { display:none; } .header-actions { margin-left:auto; gap:8px; } .header-link { padding:8px 10px; } .brand span { display:none; } .hero { padding-top:44px; padding-bottom:68px; } .hero h1 { font-size:clamp(2.7rem,13vw,4.6rem); } .two-planes, .scope { grid-template-columns:1fr; } .section { padding:64px 0; } .process { grid-template-columns:1fr; row-gap:0; } .process article, .process article + article, .process article:nth-child(3) { padding:18px 0; border-left:0; border-top:1px solid var(--line); } .process { border-top:0; } .process h3 { margin:12px 0 8px; } .site-footer { display:block; } .site-footer p + p { margin-top:10px; } }
+    @media (max-width:700px) { .shell { padding-left:16px; padding-right:16px; } .site-header { position:relative; gap:10px; } .site-nav { display:none; position:absolute; z-index:20; top:calc(100% + 1px); left:0; right:0; margin:0; padding:10px 16px 14px; flex-direction:column; align-items:stretch; gap:2px; border:1px solid var(--line); border-top:0; border-radius:0 0 14px 14px; background:var(--bg); box-shadow:0 18px 28px -24px rgba(0,0,0,.45); } .site-nav.is-open { display:flex; } .site-nav a { min-height:44px; padding:8px 10px; } .menu-toggle { display:block; } .header-actions { margin-left:auto; gap:8px; } .header-link { padding:8px 10px; } .brand span { display:none; } .hero { padding-top:44px; padding-bottom:68px; } .hero h1 { font-size:clamp(2.7rem,13vw,4.6rem); } .two-planes, .scope { grid-template-columns:1fr; } .section { padding:64px 0; } .process { grid-template-columns:1fr; row-gap:0; } .process article, .process article + article, .process article:nth-child(3) { padding:18px 0; border-left:0; border-top:1px solid var(--line); } .process { border-top:0; } .process h3 { margin:12px 0 8px; } .site-footer { display:block; } .site-footer p + p { margin-top:10px; } }
     @media (prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } .theme-curtain.falling, .theme-curtain.rising { transition:none; } }
   </style>
 </head>
@@ -96,11 +100,12 @@
     <img class="brand-mark brand-mark-dark" src="/dark-nd.png" alt="" width="52" height="52">
     <span><em>Never</em>Down</span>
   </a>
-  <nav class="site-nav" aria-label="Main navigation">
+  <nav class="site-nav" id="primaryNavigation" aria-label="Main navigation">
     <a href="#how-it-works">How it works</a>
     <a href="#failure-spots">Failure spots</a>
   </nav>
   <div class="header-actions">
+    <button class="menu-toggle" id="menuToggle" type="button" aria-controls="primaryNavigation" aria-expanded="false" aria-label="Open navigation"><span></span><span></span></button>
     <a class="header-link" href="/console.html">Open console ↗</a>
     <button id="themeToggle" class="theme-toggle" type="button" aria-label="Switch to dark mode" aria-pressed="false">
       <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
@@ -190,40 +195,49 @@
   <p>NeverDown · Programmable resilience, under policy.</p>
   <p><a href="https://github.com/dhanushonchain/NeverDown" target="_blank" rel="noopener noreferrer">GitHub ↗</a></p>
 </footer>
-<script>
-if (['#contract', '#status', '#procure', '#deny', '#evidence'].includes(location.hash)) {
-  location.replace('/console.html' + location.hash);
-}
-const toggle = document.getElementById('themeToggle');
-const curtain = document.getElementById('themeCurtain');
+<script>const toggle = document.getElementById("themeToggle");
+const curtain = document.getElementById("themeCurtain");
 let changing = false;
+function readStoredTheme() { try { return window.localStorage.getItem("nd-theme"); } catch { return null; } }
 function applyTheme(theme) {
-  document.documentElement.setAttribute('data-theme', theme);
-  document.documentElement.style.colorScheme = theme;
-  localStorage.setItem('nd-theme', theme);
-  toggle.setAttribute('aria-pressed', theme === 'dark' ? 'true' : 'false');
-  toggle.setAttribute('aria-label', theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
+  const selected = theme === "dark" ? "dark" : "light";
+  document.documentElement.setAttribute("data-theme", selected);
+  document.documentElement.style.colorScheme = selected;
+  try { window.localStorage.setItem("nd-theme", selected); } catch { /* Storage may be blocked. */ }
+  toggle.setAttribute("aria-pressed", String(selected === "dark"));
+  toggle.setAttribute("aria-label", selected === "dark" ? "Switch to light mode" : "Switch to dark mode");
 }
-applyTheme(localStorage.getItem('nd-theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
-toggle.addEventListener('click', () => {
+const initialTheme = readStoredTheme() || (window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+applyTheme(initialTheme);
+toggle.addEventListener("click", () => {
   if (changing) return;
-  const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    applyTheme(next);
-    return;
-  }
+  const next = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+  if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) { applyTheme(next); return; }
   changing = true;
-  curtain.style.setProperty('--curtain-color', next === 'dark' ? '#2a2529' : '#f3f0e7');
-  curtain.className = 'theme-curtain falling';
+  curtain.style.setProperty("--curtain-color", next === "dark" ? "#2a2529" : "#f3f0e7");
+  curtain.className = "theme-curtain falling";
   window.setTimeout(() => {
     applyTheme(next);
-    curtain.className = 'theme-curtain rising';
-    window.setTimeout(() => {
-      curtain.className = 'theme-curtain';
-      changing = false;
-    }, 550);
+    curtain.className = "theme-curtain rising";
+    window.setTimeout(() => { curtain.className = "theme-curtain"; changing = false; }, 550);
   }, 550);
 });
-</script>
+const menuToggle = document.getElementById("menuToggle");
+const navigation = document.getElementById("primaryNavigation");
+function closeNavigation() {
+  navigation.classList.remove("is-open");
+  menuToggle.setAttribute("aria-expanded", "false");
+  menuToggle.setAttribute("aria-label", "Open navigation");
+}
+menuToggle.addEventListener("click", () => {
+  const open = menuToggle.getAttribute("aria-expanded") !== "true";
+  menuToggle.setAttribute("aria-expanded", String(open));
+  menuToggle.setAttribute("aria-label", open ? "Close navigation" : "Open navigation");
+  navigation.classList.toggle("is-open", open);
+});
+navigation.querySelectorAll("a").forEach(link => link.addEventListener("click", closeNavigation));
+window.addEventListener("resize", () => { if (window.innerWidth > 700) closeNavigation(); });
+document.addEventListener("keydown", event => { if (event.key === "Escape") { closeNavigation(); menuToggle.focus(); } });
+if (["#contract", "#status", "#procure", "#deny", "#evidence"].includes(location.hash)) location.replace("/console.html" + location.hash);</script>
 </body>
 </html>
