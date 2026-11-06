@@ -9,7 +9,7 @@
  */
 import { ArkivConfigError, loadArkivWriteConfig } from "../packages/core/src/arkiv/config.js";
 import { createArkivWalletClient } from "../packages/core/src/arkiv/client.js";
-import { seedCapabilityOffers } from "../packages/core/src/arkiv/seed.js";
+import { liveSeedSpec, seedCapabilityOffers } from "../packages/core/src/arkiv/seed.js";
 
 async function main(): Promise<void> {
   let config;
@@ -29,9 +29,10 @@ async function main(): Promise<void> {
   const { account } = createArkivWalletClient(config);
   console.log(`Writer wallet: ${account.address}`);
   console.log(`Access key: ${config.accessKey ? "set" : "empty (public RPC — may rate-limit)"}`);
-  console.log("Seeding good-A, good-B, expired-C (waits ~10s for C to expire) …");
+  const spec = liveSeedSpec(process.env);
+  console.log(`Seeding ${spec.sellerens} at ${spec.serviceurl} …`);
 
-  const seeded = await seedCapabilityOffers({ config });
+  const seeded = await seedCapabilityOffers({ config, specs: [spec] });
   for (const row of seeded) {
     console.log(
       `${row.label}: entityKey=${row.entityKey} payto=${row.payto} price=${row.pricetinybars} tx=${row.txHash}`,

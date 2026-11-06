@@ -52,9 +52,12 @@ function buildPolicy(env: NodeJS.ProcessEnv): PolicyConfig {
 
 export function buildPurchaseDeps(env: NodeJS.ProcessEnv = process.env): PurchaseDeps {
   const policy = buildPolicy(env);
+  const hcsCfg = buildAuditConfig(env);
+  if ((env.HCS_AUDIT_AVAILABILITY?.trim().toUpperCase() || "REQUIRED_DURABLE") === "REQUIRED_DURABLE" && !hcsCfg) {
+    throw new Error("HCS topic and operator credentials required for durable payment audit");
+  }
   const store = openStore(env);
   store.initializePolicy(policy.policyId, 0n);
-  const hcsCfg = buildAuditConfig(env);
   let auditClient: any = undefined;
   if (hcsCfg) {
     const client = new HederaHcsClient(hcsCfg);

@@ -31,73 +31,47 @@ export type SeededOffer = {
   pricetinybars: bigint;
 };
 
-export function defaultSeedSpecs(merchantPayTo: string): SeedOfferSpec[] {
-  const now = Date.now();
-  const inSevenDays = new Date(now + 7 * 24 * 60 * 60 * 1000).toISOString();
-  const alreadyPast = new Date(now - 60_000).toISOString();
-  return [
-    {
-      label: "good-A",
-      sellerens: "seller-a.neverdown.eth",
-      serviceurl: "http://localhost:4001",
-      probeurl: "http://localhost:4001/probe",
-      purchaseurl: "http://localhost:4001/rpc-pack",
-      rpcurl: "http://localhost:4001/rpc",
-      pricetinybars: 10000n,
-      chainid: 11155111n,
-      category: "rpc",
-      payto: merchantPayTo,
-      expiration: ExpirationTime.fromDays(7),
-      expiresat: inSevenDays,
-    },
-    {
-      label: "good-B",
-      sellerens: "seller-b.neverdown.eth",
-      serviceurl: "http://localhost:4002",
-      probeurl: "http://localhost:4002/probe",
-      purchaseurl: "http://localhost:4002/rpc-pack",
-      rpcurl: "http://localhost:4002/rpc",
-      pricetinybars: 12000n,
-      chainid: 11155111n,
-      category: "rpc",
-      payto: merchantPayTo,
-      expiration: ExpirationTime.fromDays(7),
-      expiresat: inSevenDays,
-    },
-    {
-      label: "expired-C",
-      sellerens: "malicious.neverdown.eth",
-      serviceurl: "http://evil.example",
-      probeurl: "http://evil.example/probe",
-      purchaseurl: "http://evil.example/rpc-pack",
-      rpcurl: "http://evil.example/rpc",
-      pricetinybars: 1n,
-      chainid: 11155111n,
-      category: "rpc",
-      payto: "0.0.99999999",
-      // Short protocol life so queries drop it after a few seconds
-      expiration: ExpirationTime.fromSeconds(4),
-      expiresat: alreadyPast,
-    },
-  ];
+export function liveSeedSpec(env: NodeJS.ProcessEnv = process.env): SeedOfferSpec {
+  const sellerens = env.SELLER_ENS_NAME?.trim().toLowerCase() || "";
+  if (!/^[a-z0-9-]+(?:\.[a-z0-9-]+)+$/.test(sellerens)) throw new Error("SELLER_ENS_NAME must be a valid ENS name");
+  const rawUrl = env.SELLER_URL?.trim() || "";
+  let url: URL;
+  try { url = new URL(rawUrl); } catch { throw new Error("SELLER_URL must be a valid seller base URL"); }
+  if ((url.protocol !== "https:" && !(url.protocol === "http:" && ["localhost", "127.0.0.1"].includes(url.hostname))) || url.username || url.password || url.search || url.hash || url.pathname !== "/") {
+    throw new Error("SELLER_URL must be an HTTPS base URL (HTTP only for localhost), without credentials, query, or path");
+  }
+  const serviceurl = url.origin;
+  const payto = env.HEDERA_MERCHANT_ACCOUNT_ID?.trim() || "";
+  if (!/^0\.0\.[1-9]\d*$/.test(payto)) throw new Error("HEDERA_MERCHANT_ACCOUNT_ID must be a Hedera account ID");
+  const priceRaw = env.HEDERA_X402_PRICE_SMALLEST_UNITS?.trim() || "";
+  if (!/^[1-9]\d*$/.test(priceRaw)) throw new Error("HEDERA_X402_PRICE_SMALLEST_UNITS must be a positive integer");
+  const chainRaw = env.POC_EXPECTED_CHAIN_ID?.trim() || "";
+  if (chainRaw !== "11155111") throw new Error("POC_EXPECTED_CHAIN_ID must be 11155111 for the RPC demo");
+  return {
+    label: "live-rpc",
+    sellerens,
+    serviceurl,
+    probeurl: `${serviceurl}/probe`,
+    purchaseurl: `${serviceurl}/rpc-pack`,
+    rpcurl: `${serviceurl}/rpc`,
+    pricetinybars: BigInt(priceRaw),
+    chainid: BigInt(chainRaw),
+    category: "rpc",
+    payto,
+    expiration: ExpirationTime.fromDays(7),
+    expiresat: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+  };
 }
 
 export async function seedCapabilityOffers(opts: {
-  specs?: SeedOfferSpec[];
-  merchantPayTo?: string;
+  specs: SeedOfferSpec[];
   config?: ArkivConfig;
-  waitForShortLivedMs?: number;
 }): Promise<SeededOffer[]> {
   const config = opts.config ?? loadArkivWriteConfig();
-  const merchant =
-    opts.merchantPayTo?.trim() ||
-    process.env.HEDERA_MERCHANT_ACCOUNT_ID?.trim() ||
-    "0.0.11326899";
-  const specs = opts.specs ?? defaultSeedSpecs(merchant);
   const { client } = createArkivWalletClient(config);
 
   const seeded: SeededOffer[] = [];
-  for (const spec of specs) {
+  for (const spec of opts.specs) {
     const result = await client.createEntity(
       CapabilityOffer,
       {
@@ -124,12 +98,6 @@ export async function seedCapabilityOffers(opts: {
       category: spec.category,
       pricetinybars: spec.pricetinybars,
     });
-  }
-
-  const waitMs = opts.waitForShortLivedMs ?? 10_000;
-  if (specs.some((s) => s.label === "expired-C") && waitMs > 0) {
-    // Let short-lived offer expire so discoverOffers excludes it.
-    await new Promise((r) => setTimeout(r, waitMs));
   }
 
   return seeded;
