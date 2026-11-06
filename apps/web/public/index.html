@@ -42,11 +42,8 @@
     .hero h1 { max-width:780px; margin:0 0 24px; font-size:clamp(3rem,6.2vw,6rem); font-weight:700; letter-spacing:-.06em; line-height:.99; }
     .hero h1 em { font-style:italic; }
     .hero-copy { max-width:600px; margin:0; color:var(--muted); font-size:clamp(1.05rem,1.55vw,1.28rem); line-height:1.55; }
-    .hero-actions { display:flex; flex-wrap:wrap; gap:12px; margin-top:32px; }
     .button { display:inline-flex; align-items:center; justify-content:center; min-height:46px; padding:11px 18px; border-radius:10px; text-decoration:none; font-weight:700; }
     .button-primary { background:var(--text); color:var(--bg); }
-    .button-secondary { border:1px solid var(--line); }
-    .button-secondary:hover { background:var(--surface); }
     .hero-note { margin:22px 0 0; color:var(--muted); font-size:.86rem; }
     .operator-card { min-width:0; padding:26px; border:1px solid var(--panel-line); border-radius:20px; background:var(--panel); color:var(--panel-text); box-shadow:0 22px 48px -26px rgba(31,22,24,.55); }
     .operator-head { display:flex; justify-content:space-between; gap:16px; align-items:start; padding-bottom:22px; border-bottom:1px solid var(--panel-line); }
@@ -116,10 +113,6 @@
     <div>
       <h1 id="hero-title">When a service fails, <em>your app</em> keeps going.</h1>
       <p class="hero-copy">Define what NeverDown may do before a dependency breaks. It switches to an approved standby first, then finds and verifies replacement capacity under your policy.</p>
-      <div class="hero-actions">
-        <a class="button button-primary" href="/console.html">Explore the console ↗</a>
-        <a class="button button-secondary" href="#how-it-works">See how it works ↓</a>
-      </div>
     </div>
     <div class="operator-card" aria-label="Example recovery sequence">
       <div class="operator-head">
