@@ -59,7 +59,13 @@ export async function runAgentScenario(
   // Act 3 procure
   notes.push("Act 3: discover → ENS → PoC → purchase → install standby");
   const discoverInput = { category, maxPriceTinybars: maxPrice };
-  const offers = await tools.discover_offers(discoverInput);
+  let offers: Awaited<ReturnType<AgentToolBelt["discover_offers"]>>;
+  try { offers = await tools.discover_offers(discoverInput); }
+  catch (e) {
+    const message = e instanceof Error ? e.message : "offer discovery failed";
+    steps.push(step("discover_offers", false, discoverInput, undefined, message));
+    return { schemaVersion: "neverdown-evidence-v1", scenario, success: false, objective: "Procure replacement capability and install standby", steps, notes: [...notes, message] };
+  }
   steps.push(step("discover_offers", offers.length > 0, discoverInput, offers.map((o) => ({ entityKey: o.entityKey, price: o.pricetinybars.toString(), ens: o.sellerens }))));
   if (offers.length === 0) {
     return {
@@ -147,7 +153,7 @@ export async function runAgentScenario(
     amountTinybars: selected.pricetinybars.toString(),
   });
   const { entitlementToken, ...publicPurchase } = purchase;
-  const purchaseComplete = purchase.approved && purchase.settled === true && typeof entitlementToken === "string" && entitlementToken.length >= 32;
+  const purchaseComplete = purchase.approved && purchase.settled === true && purchase.status === "SETTLED" && typeof purchase.transactionId === "string" && purchase.transactionId.length > 0 && typeof entitlementToken === "string" && entitlementToken.length >= 32;
   steps.push(step("request_purchase", purchaseComplete, { purchaseId, payTo: selected.payto }, publicPurchase));
   if (!purchaseComplete) {
     return {
@@ -165,7 +171,13 @@ export async function runAgentScenario(
     };
   }
 
-  const install = await tools.install_standby({ rpcUrl: selected.rpcurl, probeUrl: selected.probeurl, entitlementToken });
+  let install: Awaited<ReturnType<AgentToolBelt["install_standby"]>>;
+  try { install = await tools.install_standby({ rpcUrl: selected.rpcurl, probeUrl: selected.probeurl, entitlementToken }); }
+  catch (e) {
+    const message = e instanceof Error ? e.message : "standby installation failed";
+    steps.push(step("install_standby", false, { rpcUrl: selected.rpcurl, probeUrl: selected.probeurl }, undefined, message));
+    return { schemaVersion: "neverdown-evidence-v1", scenario, success: false, objective: "Procure replacement capability and install standby", steps, selectedOffer: selected, ens, poc, purchase: publicPurchase, notes: [...notes, message] };
+  }
   steps.push(step("install_standby", install.installed, { rpcUrl: selected.rpcurl, probeUrl: selected.probeurl }, install));
 
   return {

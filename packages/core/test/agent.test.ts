@@ -40,13 +40,15 @@ describe("C8 supreme agent (hermetic)", () => {
     const tools = createHermeticToolBelt();
     let purchaseInput: Record<string, unknown> | undefined;
     let installInput: Record<string, unknown> | undefined;
-    tools.request_purchase = async (input) => { purchaseInput = input; return { approved: true, settled: true, transactionId: "tx-1", entitlementToken: "private-token-12345678901234567890" }; };
+    tools.request_purchase = async (input) => { purchaseInput = input; return { approved: true, settled: true, status: "SETTLED", transactionId: "tx-1", hashscanUrl: "https://hashscan.io/testnet/transaction/tx-1", auditStatus: "published", entitlementToken: "private-token-12345678901234567890" }; };
     tools.install_standby = async (input) => { installInput = input; return { installed: true, detail: {} }; };
     const receipt = await runAgentScenario("procure", tools);
     assert.equal(receipt.success, true);
     assert.equal(purchaseInput?.purchaseUrl, "http://candidate-rpc.local/rpc-pack");
     assert.equal(installInput?.probeUrl, "http://candidate-rpc.local/probe");
     assert.equal(installInput?.entitlementToken, "private-token-12345678901234567890");
+    assert.equal(receipt.purchase?.hashscanUrl, "https://hashscan.io/testnet/transaction/tx-1");
+    assert.equal(receipt.purchase?.auditStatus, "published");
     assert.ok(!JSON.stringify(receipt, (_key, value) => typeof value === "bigint" ? value.toString() : value).includes("private-token"));
   });
 
@@ -54,6 +56,16 @@ describe("C8 supreme agent (hermetic)", () => {
     const tools = createHermeticToolBelt();
     let installed = false;
     tools.request_purchase = async () => ({ approved: true, settled: true, status: "SETTLED" });
+    tools.install_standby = async () => { installed = true; return { installed: true, detail: {} }; };
+    const receipt = await runAgentScenario("procure", tools);
+    assert.equal(receipt.success, false);
+    assert.equal(installed, false);
+  });
+
+  it("does not install without a confirmed transaction id", async () => {
+    const tools = createHermeticToolBelt();
+    let installed = false;
+    tools.request_purchase = async () => ({ approved: true, settled: true, status: "SETTLED", entitlementToken: "private-token-12345678901234567890" });
     tools.install_standby = async () => { installed = true; return { installed: true, detail: {} }; };
     const receipt = await runAgentScenario("procure", tools);
     assert.equal(receipt.success, false);
@@ -83,6 +95,26 @@ describe("C8 supreme agent (hermetic)", () => {
     assert.equal(receipt.success, false);
     assert.equal(purchased, false);
     assert.ok(receipt.steps.some((step) => step.tool === "proof_of_capability" && !step.ok));
+  });
+
+  it("records a failed offer discovery before any purchase", async () => {
+    const tools = createHermeticToolBelt();
+    let purchased = false;
+    tools.discover_offers = async () => { throw new Error("Arkiv unavailable"); };
+    tools.request_purchase = async () => { purchased = true; return { approved: true, settled: true }; };
+    const receipt = await runAgentScenario("procure", tools);
+    assert.equal(receipt.success, false);
+    assert.equal(purchased, false);
+    assert.ok(receipt.steps.some((step) => step.tool === "discover_offers" && step.error));
+  });
+
+  it("keeps settlement evidence when gateway installation throws", async () => {
+    const tools = createHermeticToolBelt();
+    tools.install_standby = async () => { throw new Error("gateway unavailable"); };
+    const receipt = await runAgentScenario("procure", tools);
+    assert.equal(receipt.success, false);
+    assert.equal(receipt.purchase?.status, "SETTLED");
+    assert.ok(receipt.steps.some((step) => step.tool === "install_standby" && step.error));
   });
   it("procure: discover → ens → poc → purchase → install", async () => {
     const tools = createHermeticToolBelt();

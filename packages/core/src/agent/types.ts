@@ -8,6 +8,8 @@ export type AgentPurchaseResult = {
   denyReason?: string;
   message?: string;
   transactionId?: string;
+  hashscanUrl?: string;
+  auditStatus?: "disabled" | "published" | "failed";
   settled?: boolean;
   status?: "SETTLED" | "DENIED" | "RELEASED" | "UNCERTAIN";
   /** Internal handoff only; never put this in an evidence receipt. */

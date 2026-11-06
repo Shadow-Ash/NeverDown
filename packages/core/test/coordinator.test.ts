@@ -3,6 +3,7 @@ import { it } from "node:test";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { DatabaseSync } from "node:sqlite";
 import { IncidentCoordinator, IncidentLedger } from "../src/agent/coordinator.js";
 
 it("procures once per failover across polls and coordinator restarts", async () => {
@@ -48,4 +49,45 @@ it("lists persisted evidence without exposing an entitlement token", () => {
     assert.equal(rows[0]?.status, "COMPLETED");
     assert.ok(!JSON.stringify(rows).includes("private-secret-token"));
   } finally { ledger.close(); }
+});
+
+it("retries discovery failures at most three times with a cooldown", async () => {
+  let now = 1_000_000;
+  const ledger = new IncidentLedger(":memory:", () => now);
+  let calls = 0;
+  const snapshot = { runtimeId: "r", recentEvents: [{ id: "r:EVT-2", incidentId: "r:INC-2", reason: "failover completed", newActive: "standby" }] };
+  const coordinator = new IncidentCoordinator(ledger, async () => snapshot, async () => {
+    calls++;
+    return { success: false, steps: [{ tool: "discover_offers", ok: false, error: "temporary outage" }] };
+  });
+  try {
+    await coordinator.poll();
+    await coordinator.poll();
+    assert.equal(calls, 1);
+    now += 30_000;
+    await coordinator.poll();
+    assert.equal(calls, 2);
+    now += 30_000;
+    await coordinator.poll();
+    assert.equal(calls, 3);
+    now += 30_000;
+    await coordinator.poll();
+    assert.equal(calls, 3);
+    assert.equal(ledger.get("r:INC-2")?.status, "FAILED");
+  } finally { ledger.close(); }
+});
+
+it("upgrades an existing incident database without losing claims", () => {
+  const dir = mkdtempSync(join(tmpdir(), "nd-incident-upgrade-"));
+  const db = join(dir, "incidents.sqlite");
+  try {
+    const old = new DatabaseSync(db);
+    old.exec("CREATE TABLE incidents (incident_id TEXT PRIMARY KEY, event_id TEXT NOT NULL, status TEXT NOT NULL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL, receipt_json TEXT)");
+    old.prepare("INSERT INTO incidents VALUES (?, ?, 'COMPLETED', ?, ?, NULL)").run("old:INC-1", "old:EVT-1", "2026-01-01", "2026-01-01");
+    old.close();
+    const ledger = new IncidentLedger(db);
+    assert.equal(ledger.get("old:INC-1")?.status, "COMPLETED");
+    assert.equal(ledger.get("old:INC-1")?.attempts, 1);
+    ledger.close();
+  } finally { rmSync(dir, { recursive: true, force: true }); }
 });

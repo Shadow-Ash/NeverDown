@@ -22,7 +22,8 @@ It is **general dependency resilience**: you attach NeverDown to a failure class
 |---|---|
 | **This README** | Product, prizes, demo, status, quick start |
 | **[AGENTS.md](AGENTS.md)** | Short agent entrypoint |
-| **[docs/AGENT-CONTEXT.md](docs/AGENT-CONTEXT.md)** | Full handoff: vision, flow, status, next = C6 |
+| **[docs/AGENT-CONTEXT.md](docs/AGENT-CONTEXT.md)** | Full handoff: vision, flow, and chunk status |
+| **[docs/LIVE-BACKEND-ACCEPTANCE.md](docs/LIVE-BACKEND-ACCEPTANCE.md)** | Live backend setup and acceptance evidence |
 | **[docs/BUILD-CHUNKS.md](docs/BUILD-CHUNKS.md)** | **Detailed C0→C10 steps, gates, file ownership** |
 | **[docs/C2-PAY-ONCE.md](docs/C2-PAY-ONCE.md)** | C2 buyer: env, `pnpm pay:once`, HashScan |
 | **[docs/C3-POLICY-HCS.md](docs/C3-POLICY-HCS.md)** | C3 PolicyEngine + HCS: topic, smoke, Mirror |
@@ -247,7 +248,8 @@ Fill `.env` before C1/C2 (Hedera, facilitator, later Arkiv/ENS). **Never commit 
 | C6 ENSv2 allowlist | **Code done** (hermetic tests) |
 | C7 Proof-of-Capability | **Done** — `pnpm poc:smoke` ([docs/C7-POC.md](docs/C7-POC.md)) |
 | C8 Supreme Agent | **Done** — `pnpm agent:demo --scenario procure\|deny` ([docs/C8-AGENT.md](docs/C8-AGENT.md)) |
-| **Next → C9** | Console UI (not started) |
+| C9 Console UI | **Code landed** — five-act demo and read-only incident evidence API; live acceptance pending |
+| Backend hardening | **Hermetic tests passing**; live v2 Arkiv offer, ENS records, independent PoC, and testnet purchase still need acceptance |
 | C10 | Not started |
 | Git remote | `https://github.com/dhanushonchain/NeverDown.git` |
 | Maintainer | [ujjwaldubey1](https://github.com/ujjwaldubey1) |

@@ -213,7 +213,7 @@ export function createLiveToolBelt(env: NodeJS.ProcessEnv = process.env): AgentT
         worker = startPaymentWorker({ envFile });
         const outcome = await worker.requestPurchase({ purchaseId, serviceId, endpoint: sellerUrl, purchaseUrl, offerEntityKey, expectedPayTo: payTo, expectedAmountTinybars: amountTinybars });
         if (outcome.status !== "SETTLED") return { approved: false, settled: false, status: outcome.status, denyReason: outcome.denyReason, message: outcome.message };
-        return { approved: true, settled: true, status: "SETTLED", transactionId: outcome.transactionId, entitlementToken: outcome.entitlementToken };
+        return { approved: true, settled: true, status: "SETTLED", transactionId: outcome.transactionId, hashscanUrl: outcome.hashscanUrl, auditStatus: outcome.auditStatus, entitlementToken: outcome.entitlementToken };
       } catch {
         return { approved: false, settled: false, status: "UNCERTAIN", denyReason: "WORKER_UNAVAILABLE", message: "payment worker outcome uncertain; reconcile before retry" };
       } finally { worker?.close(); }
