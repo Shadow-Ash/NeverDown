@@ -1,4 +1,5 @@
 import type { GatewayConfig } from "./config.js";
+import { randomUUID } from "node:crypto";
 import { probeRpcProvider, type ProbeResult } from "./health.js";
 
 export type ProviderStatus = {
@@ -40,6 +41,7 @@ export class GatewayController {
   private activeId: string | null = null;
   private readonly history: GatewayEvent[] = [];
   private incidentSeq = 0;
+  private readonly runtimeId = randomUUID();
   private startedAt = Date.now();
   private timer: NodeJS.Timeout | null = null;
   private cooldownUntil = 0;
@@ -394,6 +396,7 @@ export class GatewayController {
       verificationResult: e.verificationResult,
     }));
     return {
+      runtimeId: this.runtimeId,
       uptimeMs: this.uptimeMs(),
       providers: this.config.providers.map((p) => {
         const s = this.providerStatus.get(p.id)!;
@@ -418,9 +421,9 @@ export class GatewayController {
   }
 
   private logEvent(providerId: string | null, reason: string, oldActive: string | null, newActive: string | null, verificationResult: "pass" | "fail", detail: string) {
-    const incidentId = `INC-${++this.incidentSeq}`;
+    const incidentId = `${this.runtimeId}:INC-${++this.incidentSeq}`;
     this.history.push({
-      id: `EVT-${this.history.length + 1}`,
+      id: `${this.runtimeId}:EVT-${this.incidentSeq}`,
       timestamp: new Date().toISOString(),
       providerId,
       incidentId,

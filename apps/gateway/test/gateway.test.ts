@@ -2,6 +2,7 @@ import { describe, it, before, after } from "node:test";
 import assert from "node:assert/strict";
 import express from "express";
 import { createGatewayApp } from "../src/app.js";
+import { GatewayController } from "../src/gateway.js";
 import { startMockRpc, baseConfig } from "./helpers.js";
 
 async function listen(app: express.Application) {
@@ -230,4 +231,12 @@ it("uses a private standby entitlement for probes and forwarded RPC", async () =
     assert.equal(paidReads, 1);
     assert.ok(!(await (await fetch(`${gateway.baseUrl}/status`)).text()).includes(entitlementToken));
   } finally { await gateway.close(); await seller.close(); }
+});
+
+it("gives each gateway runtime a distinct incident namespace", () => {
+  const config = baseConfig({ providers: [{ id: "primary", url: "http://127.0.0.1:1/rpc" }] });
+  const first = new GatewayController(config);
+  const second = new GatewayController(config);
+  assert.ok(first.snapshot().runtimeId);
+  assert.notEqual(first.snapshot().runtimeId, second.snapshot().runtimeId);
 });
