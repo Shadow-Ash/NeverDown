@@ -2,11 +2,19 @@
   "name": "@neverdown/web",
   "private": true,
   "version": "0.0.0",
-  "description": "NeverDown console + demo dApp UI (C9)",
+  "description": "NeverDown console + five-act demo UI (C9)",
   "scripts": {
-    "dev": "echo \"@neverdown/web: scaffold only (C0) — implement in C9\"",
-    "build": "echo \"@neverdown/web: scaffold only (C0)\"",
+    "dev": "node --env-file-if-exists=../../.env --import tsx src/server.ts",
+    "build": "echo \"@neverdown/web: static TypeScript server (C9)\"",
     "lint": "echo \"ok\"",
-    "typecheck": "echo \"ok\""
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@neverdown/core": "workspace:*"
+  },
+  "devDependencies": {
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0",
+    "@types/node": "^22.15.0"
   }
 }

@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NeverDown Console</title>
+  <style>
+    :root { --bg:#0f131a; --card:#161c25; --muted:#8b95a7; --accent:#48a7ff; --good:#45d19b; --warn:#f4bf61; --bad:#ff6b6b; }
+    * { box-sizing:border-box; font-family: ui-sans-serif, system-ui, sans-serif; }
+    body { margin:0; background:var(--bg); color:#e8edf4; }
+    main { max-width:1100px; margin:0 auto; padding:24px; }
+    h1,h2,h3 { margin-top:0; }
+    .grid { display:grid; grid-template-columns: 1fr 1fr; gap:16px; }
+    .card { background:var(--card); border-radius:12px; padding:16px; border:1px solid #2b3442; }
+    .metric { font-size:1.5rem; font-weight:700; }
+    .muted { color:var(--muted); font-size:0.9rem; }
+    button { border:0; border-radius:10px; padding:10px 14px; cursor:pointer; font-weight:700; }
+    .primary { background:var(--accent); color:#051018; }
+    .danger { background:var(--bad); color:#200505; }
+    .ok { background:var(--good); color:#04120b; }
+    label { display:block; margin-bottom:6px; color:var(--muted); font-size:.9rem; }
+    input, select { width:100%; padding:10px 12px; border-radius:10px; border:1px solid #354054; background:#0b1017; color:#e8edf4; margin-bottom:10px; }
+    pre { white-space:pre-wrap; word-break:break-word; margin:8px 0 0; font-size:.85rem; color:#cfd7e6; }
+    .step { margin:8px 0; padding:10px 14px; border-left:4px solid #2b3442; border-radius:8px; background:#111722; }
+    .pass { border-color:var(--good); }
+    .fail { border-color:var(--bad); }
+    @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+<main>
+  <h1>NeverDown Console</h1>
+  <p class="muted">Five acts without a terminal: resiliency controls, live gateway health, agent scenario evidence, and policy/candidate review.</p>
+
+  <section class="grid">
+    <div class="card">
+      <h2>Act 1 — Resilience Contract</h2>
+      <label>Allowed sellers (comma separated)</label>
+      <input id="allowlist" value="0.0.11326899">
+      <label>Max payment (tinybars)</label>
+      <input id="maxPayment" value="10000">
+      <label>Total budget (tinybars)</label>
+      <input id="budget" value="30000">
+      <p class="muted">These values demonstrate policy reasoning. Production changes should still route through your env/policy files and security review.</p>
+      <button class="primary" onclick="runDeny()">Run denial attack</button>
+    </div>
+
+    <div class="card">
+      <h2>Act 2 — Live Status</h2>
+      <div class="metric" id="active">loading</div>
+      <p class="muted">Selected gateway / primary and standby health. Gateway URL: <span id="gatewayUrl"></span></p>
+      <button class="primary" onclick="refreshStatus()">Refresh status</button>
+    </div>
+  </section>
+
+  <section class="grid" style="margin-top:16px;">
+    <div class="card">
+      <h2>Act 3 — Procure Scenario</h2>
+      <p class="muted">Runs the hermetic agent and installs a standby in-process. Safe for hackathon and no spend.</p>
+      <button class="primary" onclick="runScenario('procure')">Run procurement</button>
+      <pre id="procureOutput">Waiting...</pre>
+    </div>
+    <div class="card">
+      <h2>Act 4 — Denial Attack</h2>
+      <p class="muted">Runs a forced bad recipient and confirms it is denied before any settlement.</p>
+      <button class="danger" onclick="runScenario('deny')">Run denial attack</button>
+      <pre id="denyOutput">Waiting...</pre>
+    </div>
+  </section>
+
+  <section class="card" style="margin-top:16px;">
+    <h2>Act 5 — Evidence Timeline</h2>
+    <div id="timeline"></div>
+    <p class="muted">Gateway snapshots and agent outputs are shown below. Connect HCS, Arkiv, and payment records as backend integrations are available.</p>
+  </section>
+</main>
+<script>
+const els = {
+  active: document.getElementById('active'),
+  gatewayUrl: document.getElementById('gatewayUrl'),
+  procureOutput: document.getElementById('procureOutput'),
+  denyOutput: document.getElementById('denyOutput'),
+  timeline: document.getElementById('timeline'),
+};
+
+async function refreshStatus() {
+  try {
+    const res = await fetch('/api/status');
+    const data = await res.json();
+    const snap = data.status || {};
+    els.active.textContent = snap.active || 'unknown';
+    els.gatewayUrl.textContent = data.gatewayUrl || 'unknown';
+    let inner = '';
+    if (Array.isArray(snap.providers)) {
+      inner = snap.providers.map(p => `<div class="step ${p.healthy ? 'pass' : 'fail'}"><b>${p.id}</b><br>healthy: ${p.healthy} · failures: ${p.consecutiveFailures ?? 0} · latency: ${p.latencyMs ?? 'n/a'}ms</div>`).join('');
+    }
+    els.timeline.innerHTML = inner || '<div class="step">No provider data yet.</div>';
+  } catch (e) {
+    els.active.textContent = 'error';
+    els.timeline.innerHTML = `<div class="step fail">Unable to reach gateway: ${e}</div>`;
+  }
+}
+
+function renderReceipt(target, receipt) {
+  const steps = (receipt.steps || []).map(s => `<div class="step ${s.ok ? 'pass' : 'fail'}"><b>${s.tool}</b><br>${s.ok ? 'ok' : 'failed'}${s.error ? ' — ' + s.error : ''}</div>`).join('');
+  target.textContent = JSON.stringify(receipt, null, 2);
+  if (steps) {
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = `<div class="muted">Timeline</div>${steps}`;
+    target.after(wrapper);
+  }
+}
+
+async function runScenario(kind) {
+  const target = kind === 'deny' ? els.denyOutput : els.procureOutput;
+  target.textContent = 'Running scenario...';
+  try {
+    const res = await fetch('/api/run-agent', { method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify({ scenario: kind }) });
+    const data = await res.json();
+    target.textContent = JSON.stringify(data.receipt || data, null, 2);
+    if (data.receipt) {
+      els.timeline.innerHTML = (data.receipt.steps || []).map(s => `<div class="step ${s.ok ? 'pass' : 'fail'}"><b>${s.tool}</b><br>${s.ok ? 'pass' : 'fail'}</div>`).join('');
+    }
+  } catch (e) {
+    target.textContent = 'Error: ' + e;
+  }
+}
+
+function runDeny() {
+  runScenario('deny');
+}
+
+refreshStatus();
+</script>
+</body>
+</html>
