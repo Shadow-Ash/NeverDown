@@ -1,4 +1,4 @@
-import { JsonRpcProvider } from "ethers";
+import { AbiCoder, Contract, Interface, JsonRpcProvider, namehash } from "ethers";
 
 export type EnsTextRecords = {
   hederaAccount?: string;
@@ -30,6 +30,16 @@ const DEFAULT_TEXT_KEYS = {
   category: "category",
 } as const;
 
+/** Upgradable Universal Resolver proxy (ENSv1 + ENSv2 on mainnet/Sepolia). */
+export const UNIVERSAL_RESOLVER_ADDRESS = "0xeEeEEEeE14D718C2B47D9923Deab1335E144EeEe";
+
+const RESOLVER_IFACE = new Interface([
+  "function addr(bytes32 node) view returns (address)",
+  "function text(bytes32 node, string key) view returns (string)",
+]);
+
+const UR_ABI = ["function resolve(bytes name, bytes data) view returns (bytes, address)"] as const;
+
 function normalizeName(value: string): string | null {
   try {
     const name = value.trim().toLowerCase().replace(/\.$/, "");
@@ -38,6 +48,18 @@ function normalizeName(value: string): string | null {
   } catch {
     return null;
   }
+}
+
+/** DNS wire-format name for Universal Resolver `resolve(bytes,bytes)`. */
+export function dnsEncodeName(name: string): string {
+  const labels = name.trim().toLowerCase().replace(/\.$/, "").split(".");
+  let out = "0x";
+  for (const label of labels) {
+    const bytes = Buffer.from(label, "utf8");
+    if (bytes.length === 0 || bytes.length > 63) throw new EnsResolutionError(`invalid ENS label in ${name}`, "RESOLVE_FAILED");
+    out += bytes.length.toString(16).padStart(2, "0") + bytes.toString("hex");
+  }
+  return out + "00";
 }
 
 export function createEnsProvider(rpcUrl: string): JsonRpcProvider {
@@ -57,15 +79,69 @@ function applyOptionalTextOverlay(records: EnsTextRecords, env: NodeJS.ProcessEn
   };
 }
 
-export async function resolveEnsSeller(name: string, rpcUrlOrProvider: string | JsonRpcProvider): Promise<EnsSellerResolution> {
-  const provider = typeof rpcUrlOrProvider === "string" ? new JsonRpcProvider(rpcUrlOrProvider) : rpcUrlOrProvider;
+type ProviderLike = {
+  getResolver?(name: string): Promise<{ getText(key: string): Promise<string | null>; getAddress(): Promise<string | null>; address?: string } | null>;
+  call?(tx: { to: string; data: string }): Promise<string>;
+};
 
-  const normalized = normalizeName(name);
-  if (!normalized) throw new EnsResolutionError("invalid ENS name", "RESOLVE_FAILED");
+async function resolveViaUniversalResolver(
+  provider: JsonRpcProvider,
+  normalized: string,
+): Promise<EnsSellerResolution> {
+  const ur = new Contract(UNIVERSAL_RESOLVER_ADDRESS, UR_ABI, provider);
+  const dns = dnsEncodeName(normalized);
+  const node = namehash(normalized);
+  const coder = AbiCoder.defaultAbiCoder();
 
+  const call = async (data: string): Promise<{ ret: string; resolver: string }> => {
+    const [ret, resolver] = await ur.resolve.staticCall(dns, data);
+    return { ret, resolver: String(resolver) };
+  };
+
+  let address: string | null = null;
+  let resolverAddress: string | null = null;
+  try {
+    const { ret, resolver } = await call(RESOLVER_IFACE.encodeFunctionData("addr", [node]));
+    resolverAddress = resolver;
+    address = coder.decode(["address"], ret)[0] as string;
+    if (address === "0x0000000000000000000000000000000000000000") address = null;
+  } catch (e) {
+    throw new EnsResolutionError(`No ENS resolver for ${normalized}`, "RESOLVE_FAILED", e);
+  }
+
+  const records: EnsTextRecords = {};
+  try {
+    for (const [field, key] of Object.entries(DEFAULT_TEXT_KEYS) as Array<[keyof EnsTextRecords, string]>) {
+      try {
+        const { ret } = await call(RESOLVER_IFACE.encodeFunctionData("text", [node, key]));
+        const value = (coder.decode(["string"], ret)[0] as string)?.trim();
+        if (value) records[field] = value;
+      } catch {
+        // missing text key is fine
+      }
+    }
+  } catch (e) {
+    throw new EnsResolutionError(`text record lookup failed for ${normalized}`, "RESOLVE_FAILED", e);
+  }
+
+  return {
+    ensName: normalized,
+    normalizedEnsName: normalized,
+    address,
+    records: applyOptionalTextOverlay(records),
+    resolverAddress,
+  };
+}
+
+async function resolveViaClassicResolver(
+  provider: ProviderLike,
+  name: string,
+  normalized: string,
+): Promise<EnsSellerResolution | null> {
+  if (!provider.getResolver) return null;
   const rawResolver = await provider.getResolver(normalized);
-  if (!rawResolver) throw new EnsResolutionError(`No ENS resolver for ${name}`, "RESOLVE_FAILED");
-  const resolver = rawResolver as unknown as { getText(key: string): Promise<string | null>; getAddress(): Promise<string | null>; };
+  if (!rawResolver) return null;
+  const resolver = rawResolver as unknown as { getText(key: string): Promise<string | null>; getAddress(): Promise<string | null>; address?: string };
   const records: EnsTextRecords = {};
   try {
     records.hederaAccount = (await resolver.getText(DEFAULT_TEXT_KEYS.hederaAccount)) ?? undefined;
@@ -88,8 +164,28 @@ export async function resolveEnsSeller(name: string, rpcUrlOrProvider: string | 
     normalizedEnsName: normalized,
     address,
     records: applyOptionalTextOverlay(records),
-    resolverAddress: null,
+    resolverAddress: resolver.address ?? null,
   };
+}
+
+export async function resolveEnsSeller(name: string, rpcUrlOrProvider: string | JsonRpcProvider | ProviderLike): Promise<EnsSellerResolution> {
+  const normalized = normalizeName(name);
+  if (!normalized) throw new EnsResolutionError("invalid ENS name", "RESOLVE_FAILED");
+
+  const provider =
+    typeof rpcUrlOrProvider === "string" ? new JsonRpcProvider(rpcUrlOrProvider) : rpcUrlOrProvider;
+
+  const classic = await resolveViaClassicResolver(provider as ProviderLike, name, normalized);
+  if (classic) return classic;
+
+  // ENSv2 names often have no classic registry owner; fall back to Universal Resolver.
+  if (provider instanceof JsonRpcProvider || typeof rpcUrlOrProvider === "string") {
+    const json =
+      provider instanceof JsonRpcProvider ? provider : new JsonRpcProvider(rpcUrlOrProvider as string);
+    return resolveViaUniversalResolver(json, normalized);
+  }
+
+  throw new EnsResolutionError(`No ENS resolver for ${name}`, "RESOLVE_FAILED");
 }
 
 export function requireEnsAllowed(ensName: string, allowedNames: readonly string[]): void {
@@ -115,7 +211,7 @@ export function validateResolvedSeller(
 export async function resolveAndValidateEnsSeller(
   ensName: string,
   expectedPayTo: string,
-  rpcUrlOrProvider: string | JsonRpcProvider,
+  rpcUrlOrProvider: string | JsonRpcProvider | ProviderLike,
   allowedNames?: readonly string[],
 ): Promise<EnsSellerResolution> {
   if (allowedNames && allowedNames.length > 0) requireEnsAllowed(ensName, allowedNames);

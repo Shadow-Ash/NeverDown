@@ -18,13 +18,24 @@ async function main(): Promise<void> {
     try { await checkRpcChainId(url, expected); }
     catch { throw new PreflightFailure(`${label} chain check failed`); }
   };
+  // ENS may be Sepolia (demo) or mainnet; RPC demo plane stays Sepolia.
+  try {
+    await checkRpcChainId(process.env.ENS_RPC_URL!, "0xaa36a7");
+    console.log("ENS RPC answers on Sepolia");
+  } catch {
+    try {
+      await checkRpcChainId(process.env.ENS_RPC_URL!, "0x1");
+      console.log("ENS RPC answers on mainnet");
+    } catch {
+      throw new PreflightFailure("ENS RPC chain check failed (need Sepolia 0xaa36a7 or mainnet 0x1)");
+    }
+  }
   await Promise.all([
-    verifyChain("ENS RPC", process.env.ENS_RPC_URL!, "0x1"),
     verifyChain("gateway primary", (process.env.GATEWAY_PRIMARY_RPC_URL || process.env.GATEWAY_PRIMARY_RPC)!, "0xaa36a7"),
     verifyChain("gateway standby", (process.env.GATEWAY_STANDBY_RPC_URL || process.env.GATEWAY_STANDBY_RPC)!, "0xaa36a7"),
     verifyChain("PoC reference", process.env.POC_REFERENCE_RPC!, "0xaa36a7"),
   ]);
-  console.log("ENS and RPC providers answer on the expected chains");
+  console.log("Gateway/PoC providers answer on Sepolia");
   const spec = liveSeedSpec(process.env);
   const offers = await discoverOffers({ category: "rpc", maxPriceTinybars: spec.pricetinybars });
   const selected = offers.find((o) => o.sellerens === spec.sellerens && o.serviceurl === spec.serviceurl && o.payto === spec.payto && o.pricetinybars === spec.pricetinybars && o.chainid === spec.chainid && o.probeurl === spec.probeurl && o.purchaseurl === spec.purchaseurl && o.rpcurl === spec.rpcurl);

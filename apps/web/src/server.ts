@@ -61,7 +61,7 @@ async function handleApi(req: IncomingMessage, res: ServerResponse, pathname: st
 
   if (pathname === "/api/evidence" && req.method === "GET") {
     send(res, 200, {
-      ens: process.env.SELLER_ENS_NAME || "neverdown.eth",
+      ens: process.env.SELLER_ENS_NAME || "neverdownseller.eth",
       arkivEntityKey: process.env.DEMO_ARKIV_ENTITY_KEY || "0x74867aaf0276debc7b151f1a40e6c1cd4e06d14018539f01112a17738a63310d",
       transactionId: process.env.DEMO_HEDERA_TX_ID || "0.0.9185802@1793985063.486076384",
       hashscanUrl: process.env.DEMO_HASHSCAN_URL || "https://hashscan.io/testnet/transaction/0.0.9185802%401793985063.486076384",
