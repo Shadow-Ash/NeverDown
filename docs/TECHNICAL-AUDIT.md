@@ -51,7 +51,7 @@ Existing API routes:
 | `POST /api/run-agent` | Runs `procure` or `deny`; defaults to hermetic mode; live execution is controlled by server environment |
 | `POST /api/outage` | Proxies to gateway internal install hook only when internal API is enabled |
 
-The console is a five-card flow. It includes interactive previous/next controls, hash-aware act navigation, status refresh, procure/deny scenario controls, evidence loading, and a read-only guide chat. Some Resilience Contract values and narrative copy are demonstrative; changing those display values does not mutate the backend policy. The hosted static preview does not call local API routes and disables backend-only interactions.
+The console is a five-card flow. It includes interactive previous/next controls, hash-aware act navigation, status refresh, procure/deny scenario controls, evidence loading, and a read-only guide chat. Some Resilience Contract values and narrative copy are demonstrative; changing those display values does not mutate the backend policy. The hosted static preview does not call local API routes and disables backend-only interactions. The local evidence endpoint returns only explicitly configured identifiers; absent references are null rather than stale sample IDs.
 
 ## Existing limitations / claims boundary
 

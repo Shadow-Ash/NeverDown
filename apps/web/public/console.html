@@ -434,7 +434,7 @@ async function loadEvidence() {
         row.append(link);
       } else {
         const detail = document.createElement('div');
-        detail.textContent = value;
+        detail.textContent = value || 'Not configured for this environment';
         row.append(detail);
       }
       box.append(row);

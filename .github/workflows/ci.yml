@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, Shadow-Branch]
   pull_request:
     branches: [main, Shadow-Branch]
 
@@ -25,6 +25,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm typecheck
       - run: pnpm build
+      - run: pnpm lint
+      - run: node scripts/build-vercel-static.mjs
       - run: pnpm test
       - run: pnpm test:web
       - run: pnpm test:smoke
@@ -40,4 +42,6 @@ jobs:
       - run: npm install
       - run: npm run typecheck
       - run: npm run build
+      - run: npm run lint
+      - run: node scripts/build-vercel-static.mjs
       - run: npm test
