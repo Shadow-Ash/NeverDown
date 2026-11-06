@@ -22,7 +22,18 @@ html[data-theme="dark"] { --bg:#2a2529; --surface:#242023; --card:#f3f0e7; --car
     .ok { background:var(--success); color:#04120b; }
     label { display:block; margin-bottom:6px; color:var(--muted); font-size:.9rem; }
     input, select { width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--border); background:var(--bg); color:var(--text); margin-bottom:10px; }
-    .theme-toggle { position:fixed; top:18px; right:18px; z-index:1000; background:var(--surface); color:var(--text); border:1px solid var(--border); min-width:96px; }
+    .theme-toggle { position:fixed; top:16px; right:16px; z-index:1000; margin:0; padding:0; width:60px; height:30px; border:0; border-radius:999px; background:var(--surface); box-shadow:inset 0 0 0 1px var(--border); cursor:pointer; overflow:hidden; transition:background .25s ease,box-shadow .25s ease; }
+    .theme-toggle .track { position:relative; width:100%; height:100%; }
+    .theme-toggle .icon { position:absolute; top:6px; color:var(--muted); opacity:.55; transition:opacity .25s ease,transform .35s ease; }
+    .theme-toggle .sun { left:8px; }
+    .theme-toggle .moon { right:9px; }
+    .theme-toggle .knob { position:absolute; top:3px; left:3px; width:24px; height:24px; border-radius:50%; background:var(--text); box-shadow:0 1px 4px rgba(0,0,0,.12); transition:transform .35s cubic-bezier(.33,.02,.23,1),background .25s ease; }
+    html[data-theme="dark"] .theme-toggle .knob { transform:translateX(30px); }
+    html[data-theme="dark"] .theme-toggle { background:var(--bg); }
+    html[data-theme="dark"] .theme-toggle .sun { opacity:.35; transform:translateX(30px); }
+    html[data-theme="dark"] .theme-toggle .moon { opacity:1; }
+    html:not([data-theme="dark"]) .theme-toggle .sun { opacity:1; }
+    html:not([data-theme="dark"]) .theme-toggle .moon { opacity:.35; transform:translateX(-30px); }
     pre { white-space:pre-wrap; word-break:break-word; margin:8px 0 0; font-size:.85rem; color:#d9d5cc; }
     .step { margin:8px 0; padding:10px 14px; border-left:4px solid #2b3442; border-radius:8px; background:#111722; }
     .pass { border-color:var(--good); }
@@ -31,7 +42,13 @@ html[data-theme="dark"] { --bg:#2a2529; --surface:#242023; --card:#f3f0e7; --car
   </style>
 </head>
 <body>
-<button id="themeToggle" class="theme-toggle" type="button" aria-label="Toggle light and dark mode">Light</button>
+<button id="themeToggle" class="theme-toggle" type="button" aria-label="Toggle light and dark mode">
+  <span class="track">
+    <svg class="icon sun" viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0-5v2.1M19.07 4.93l-1.49 1.49M22 12h-2.1M19.07 19.07l-1.49-1.49M12 22v-2.1M4.93 19.07l1.49-1.49M2 12h2.1M4.93 4.93l1.49 1.49" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    <svg class="icon moon" viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span class="knob"></span>
+  </span>
+</button>
 <main>
   <h1>NeverDown Console</h1>
   <p class="muted">Five acts without a terminal: resiliency controls, live gateway health, agent scenario evidence, and policy/candidate review.</p>
@@ -139,7 +156,7 @@ function applyTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
   document.documentElement.style.colorScheme = theme === 'dark' ? 'dark' : 'light';
   localStorage.setItem('nd-theme', theme);
-  themeToggleButton.textContent = theme === 'dark' ? 'Dark' : 'Light';
+  themeToggleButton.setAttribute('aria-pressed', theme === 'dark' ? 'true' : 'false');
 }
 const savedTheme = localStorage.getItem('nd-theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
 applyTheme(savedTheme);
