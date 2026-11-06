@@ -34,6 +34,8 @@ export type RoutingMode = "normal" | "failover" | "degraded" | "unavailable";
 export class GatewayController {
   readonly config: GatewayConfig;
   private providerStatus = new Map<string, ProviderStatus>();
+  private readonly entitlementTokens = new Map<string, string>();
+  private readonly probeUrls = new Map<string, string>();
   private referenceBlock: number | null = null;
   private activeId: string | null = null;
   private readonly history: GatewayEvent[] = [];
@@ -115,11 +117,12 @@ export class GatewayController {
       for (const provider of this.config.providers) {
         const current = this.providerStatus.get(provider.id)!;
         const result = await probeRpcProvider(
-          provider.url,
+          this.probeUrls.get(provider.id) ?? provider.url,
           this.config.chainId,
           this.config.requestTimeoutMs,
           this.referenceBlock,
           this.config.staleBlockTolerance,
+          this.probeUrls.has(provider.id) ? undefined : this.entitlementTokens.get(provider.id),
         );
         results.set(provider.id, result);
 
@@ -254,7 +257,7 @@ export class GatewayController {
       try {
         const res = await fetch(provider.url, {
           method: "POST",
-          headers: { "content-type": "application/json" },
+          headers: { "content-type": "application/json", ...(this.entitlementTokens.has(providerId) ? { authorization: `Bearer ${this.entitlementTokens.get(providerId)}` } : {}) },
           body: JSON.stringify(body),
           signal: controller.signal,
           redirect: "error",
@@ -311,7 +314,10 @@ export class GatewayController {
   }
 
   installStandby(request: unknown): { ok: boolean; status: number; body: unknown } {
-    const body = (request ?? {}) as { url?: unknown; rpcUrl?: unknown };
+    const body = (request ?? {}) as { url?: unknown; rpcUrl?: unknown; probeUrl?: unknown; entitlementToken?: unknown };
+    if (body.entitlementToken !== undefined && (typeof body.entitlementToken !== "string" || !/^[A-Za-z0-9_-]{32,128}$/.test(body.entitlementToken))) {
+      return { ok: false, status: 400, body: { error: "invalid entitlement token" } };
+    }
     const raw = typeof body.url === "string" ? body.url : typeof body.rpcUrl === "string" ? body.rpcUrl : "";
     let parsed: URL;
     try {
@@ -326,6 +332,17 @@ export class GatewayController {
       return { ok: false, status: 400, body: { error: "url must not contain credentials" } };
     }
     const url = parsed.toString();
+    let probeUrl: string | undefined;
+    if (body.probeUrl !== undefined) {
+      if (typeof body.probeUrl !== "string") return { ok: false, status: 400, body: { error: "invalid probe url" } };
+      try {
+        const probe = new URL(body.probeUrl);
+        if (probe.origin !== parsed.origin || probe.username || probe.password || probe.search || probe.hash) throw new Error("invalid probe url");
+        probeUrl = probe.toString();
+      } catch {
+        return { ok: false, status: 400, body: { error: "probe url must share RPC origin" } };
+      }
+    }
     const primary = this.config.providers.find((p) => p.id === "primary");
     if (primary && primary.url === url) {
       return { ok: false, status: 400, body: { error: "standby url must differ from primary" } };
@@ -338,6 +355,10 @@ export class GatewayController {
     } else {
       this.config.providers.push({ id: "standby", url });
     }
+    if (typeof body.entitlementToken === "string") this.entitlementTokens.set("standby", body.entitlementToken);
+    else this.entitlementTokens.delete("standby");
+    if (probeUrl) this.probeUrls.set("standby", probeUrl);
+    else this.probeUrls.delete("standby");
     this.providerStatus.set("standby", {
       id: "standby",
       url,

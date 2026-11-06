@@ -9,6 +9,7 @@ export interface SellerConfig {
   facilitatorUrl: string;
   rpcMode: RpcMode;
   rpcUpstreamUrl: string | null;
+  entitlementDbPath: string;
 }
 
 export class ConfigError extends Error {
@@ -97,5 +98,6 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): SellerConfig {
     facilitatorUrl,
     rpcMode,
     rpcUpstreamUrl,
+    entitlementDbPath: env.SELLER_ENTITLEMENT_DB_PATH?.trim() || "neverdown-seller.sqlite",
   };
 }

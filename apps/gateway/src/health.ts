@@ -30,7 +30,7 @@ function safeJsonText(text: string): unknown {
   }
 }
 
-async function rpcFetch(url: string, method: string, params: unknown[], timeoutMs: number): Promise<unknown> {
+async function rpcFetch(url: string, method: string, params: unknown[], timeoutMs: number, entitlementToken?: string): Promise<unknown> {
   const body = JSON.stringify({
     jsonrpc: "2.0",
     id: 1,
@@ -44,7 +44,7 @@ async function rpcFetch(url: string, method: string, params: unknown[], timeoutM
   try {
     const res = await fetch(url, {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: { "content-type": "application/json", ...(entitlementToken ? { authorization: `Bearer ${entitlementToken}` } : {}) },
       body,
       signal: controller.signal,
       redirect: "error",
@@ -64,13 +64,14 @@ export async function probeRpcProvider(
   timeoutMs: number,
   referenceBlock: number | null,
   staleTolerance: number,
+  entitlementToken?: string,
 ): Promise<ProbeResult> {
   const t0 = Date.now();
   const latency = () => Date.now() - t0;
 
   try {
     const chainInfo = (await Promise.race([
-      rpcFetch(url, "eth_chainId", [], timeoutMs),
+      rpcFetch(url, "eth_chainId", [], timeoutMs, entitlementToken),
       new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), timeoutMs)),
     ])) as { result?: unknown } | undefined;
 
@@ -85,7 +86,7 @@ export async function probeRpcProvider(
     }
 
     const blockInfo = (await Promise.race([
-      rpcFetch(url, "eth_blockNumber", [], timeoutMs),
+      rpcFetch(url, "eth_blockNumber", [], timeoutMs, entitlementToken),
       new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), timeoutMs)),
     ])) as { result?: unknown } | undefined;
 

@@ -67,7 +67,8 @@ export function createGatewayApp(opts: AppOptions): { app: Application; controll
       res.status(401).json({ error: "unauthorized" });
       return;
     }
-    res.json(controller.installStandby(req.body));
+    const result = controller.installStandby(req.body);
+    res.status(result.status).json(result.body);
   });
 
   app.use((err: Error & { type?: string }, _req: Request, res: Response, _next: NextFunction) => {

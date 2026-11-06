@@ -196,3 +196,38 @@ describe("C4 single-provider degraded mode", () => {
     await p.stopped();
   });
 });
+
+it("uses a private standby entitlement for probes and forwarded RPC", async () => {
+  const entitlementToken = "private-test-token-1234567890123456";
+  const standby = express();
+  standby.use(express.json());
+  let paidReads = 0;
+  standby.post("/probe", (req, res) => {
+    const method = req.body.method;
+    res.json({ jsonrpc: "2.0", id: req.body.id, result: method === "eth_chainId" ? "0xaa36a7" : "0x3e8" });
+  });
+  standby.post("/rpc", (req, res) => {
+    if (req.headers.authorization !== `Bearer ${entitlementToken}`) { res.status(401).json({ error: "unauthorized" }); return; }
+    paidReads++;
+    const method = req.body.method;
+    res.json({ jsonrpc: "2.0", id: req.body.id, result: method === "eth_chainId" ? "0xaa36a7" : "0x3e8" });
+  });
+  const seller = await listen(standby);
+  const cfg = baseConfig({ providers: [{ id: "primary", url: "http://127.0.0.1:1/rpc" }], internalApiEnabled: true, internalToken: "admin-test-token", failureThreshold: 1 }) as never;
+  const { app, controller } = createGatewayApp({ config: cfg });
+  const gateway = await listen(app);
+  try {
+    const installed = await fetch(`${gateway.baseUrl}/_internal/install-standby`, { method: "POST", headers: { "content-type": "application/json", "x-gateway-internal-token": "admin-test-token" }, body: JSON.stringify({ url: `${seller.baseUrl}/rpc`, probeUrl: `${seller.baseUrl}/probe`, entitlementToken }) });
+    assert.equal(installed.status, 200);
+    const bad = await fetch(`${gateway.baseUrl}/_internal/install-standby`, { method: "POST", headers: { "content-type": "application/json", "x-gateway-internal-token": "admin-test-token" }, body: JSON.stringify({ url: `${seller.baseUrl}/rpc`, entitlementToken: "bad" }) });
+    assert.equal(bad.status, 400);
+    await controller.probeOnce();
+    assert.equal(controller.getStatus("standby")?.healthy, true);
+    assert.equal(paidReads, 0, "health checks must not consume paid requests");
+    const rpc = await post(gateway.baseUrl, { jsonrpc: "2.0", id: 8, method: "eth_blockNumber", params: [] });
+    assert.equal(rpc.status, 200);
+    assert.equal((await rpc.json() as { result: string }).result, "0x3e8");
+    assert.equal(paidReads, 1);
+    assert.ok(!(await (await fetch(`${gateway.baseUrl}/status`)).text()).includes(entitlementToken));
+  } finally { await gateway.close(); await seller.close(); }
+});

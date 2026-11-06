@@ -94,6 +94,39 @@ describe("C1 x402 RPC seller", () => {
     } finally { await probe.close(); }
   });
 
+  it("quotes a pack purchase and rejects unissued bearer credentials", async () => {
+    const pack = await fetch(`${ctx.baseUrl}/rpc-pack`, { method: "POST", headers: { "content-type": "application/json" }, body: "{}" });
+    assert.equal(pack.status, 402);
+    assert.ok(pack.headers.get("payment-required"));
+    const bearer = await post(ctx, VALID_RPC, { authorization: "Bearer invented" });
+    assert.equal(bearer.status, 401);
+    assert.equal(ctx.upstreamCalls, 0);
+  });
+
+  it("activates a bounded credential only after fake facilitator settlement", async () => {
+    const facilitator = fakeFacilitator();
+    facilitator.verify = async () => ({ isValid: true, payer: "0.0.1111" });
+    facilitator.settle = async () => ({ success: true, transaction: "0.0.1111@1700000000.000000001", network: "hedera:testnet" });
+    const app = createApp({ config: testConfig(), facilitatorClient: facilitator });
+    const srv = await listen(app);
+    try {
+      const unpaid = await fetch(`${srv.baseUrl}/rpc-pack`, { method: "POST", headers: { "content-type": "application/json" }, body: "{}" });
+      assert.equal(unpaid.status, 402);
+      const challenge = decodePaymentRequired(unpaid.headers.get("payment-required")!) as { resource: unknown; accepts: unknown[] };
+      const signature = Buffer.from(JSON.stringify({ x402Version: 2, resource: challenge.resource, accepted: challenge.accepts[0], payload: { transaction: "AAAA" } })).toString("base64");
+      const paid = await fetch(`${srv.baseUrl}/rpc-pack`, { method: "POST", headers: { "content-type": "application/json", "payment-signature": signature }, body: "{}" });
+      assert.equal(paid.status, 200);
+      const { token } = await paid.json() as { token: string };
+      assert.ok(token);
+      for (let i = 0; i < 100; i++) {
+        const rpc = await fetch(`${srv.baseUrl}/rpc`, { method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${token}` }, body: JSON.stringify(VALID_RPC) });
+        assert.equal(rpc.status, 200, `request ${i}`);
+      }
+      const exhausted = await fetch(`${srv.baseUrl}/rpc`, { method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${token}` }, body: JSON.stringify(VALID_RPC) });
+      assert.equal(exhausted.status, 401);
+    } finally { await srv.close(); }
+  });
+
   it("Test C: the decoded challenge advertises the configured Hedera testnet exact payment", async () => {
     const res = await post(ctx, VALID_RPC);
     const challenge = decodePaymentRequired(res.headers.get("payment-required")!) as {

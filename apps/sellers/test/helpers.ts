@@ -19,6 +19,7 @@ export function testConfig(overrides: Partial<SellerConfig> = {}): SellerConfig 
     facilitatorUrl: "http://localhost:9",
     rpcMode: "mock",
     rpcUpstreamUrl: null,
+    entitlementDbPath: ":memory:",
     ...overrides,
   };
 }
