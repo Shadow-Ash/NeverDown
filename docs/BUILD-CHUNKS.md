@@ -24,8 +24,8 @@ Do **not** start UI (C9) before rails (C1–C7) and agent (C8) work.
 | C6 | ENSv2 resolve identity | **Code done** (hermetic tests) | Off-allowlist fail-closed |
 | C7 | Proof-of-Capability | **Done** | Bad RPC rejected |
 | C8 | Supreme Agent wire-up | **Done** | Act 3 + Act 4 CLI |
-| C9 | Console UI | Not started | Five-act clickable |
-| C10 | Judge packaging | Not started | Ship checklist green |
+| C9 | Console UI | Code landed (dev + five acts) | `pnpm --filter @neverdown/web dev` + browser acts |
+| C10 | Judge packaging | Code docs landed (README still needs operator review) | Checklist in this chunk |
 
 ---
 
