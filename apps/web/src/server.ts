@@ -10,7 +10,7 @@ const PUBLIC = join(process.cwd(), "public");
 
 function send(res: ServerResponse, status: number, body: any, contentType = "application/json") {
   res.writeHead(status, { "content-type": contentType });
-  if (typeof body === "string") res.end(body);
+  if (typeof body === "string" || Buffer.isBuffer(body)) res.end(body);
   else res.end(JSON.stringify(body));
 }
 
@@ -29,6 +29,7 @@ const MIME: Record<string, string> = {
   ".css": "text/css; charset=utf-8",
   ".js": "text/javascript; charset=utf-8",
   ".json": "application/json",
+  ".woff2": "font/woff2",
 };
 
 async function fetchGateway(path: string) {
@@ -103,7 +104,7 @@ createServer(async (req, res) => {
   if (existsSync(path)) {
     try {
       const body = readFileSync(path);
-      send(res, 200, body.toString(), MIME[extname(path)] || "text/plain");
+      send(res, 200, body, MIME[extname(path)] || "text/plain");
     } catch {
       send(res, 404, "not found", "text/plain");
     }
