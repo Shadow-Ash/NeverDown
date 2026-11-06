@@ -190,19 +190,36 @@ neverdown/
 
 ---
 
-## Quick start (C0)
+## Quick start
+
+**Requirements:** Node.js 20+ (Node 22 LTS recommended).
 
 ```bash
-git clone https://github.com/ujjwaldubey1/NeverDown.git
+git clone https://github.com/dhanushonchain/NeverDown.git
 cd NeverDown
-cp .env.example .env
-
-# Node 20+
-npx pnpm@9.15.0 install
-npx pnpm@9.15.0 -r list --depth -1
+npm install
+npm run dev
 ```
 
-Fill `.env` before C1/C2 (Hedera, facilitator, later Arkiv/ENS), then run `chmod 600 .env`. **Never commit `.env`.**
+Open http://localhost:3000 for the homepage and http://localhost:3000/console.html for the five-act console. `npm run dev` starts only the web app; it does not start the gateway or seller.
+
+Build and run the production web server:
+
+```bash
+npm run build
+npm start
+```
+
+The repository also supports pnpm 9.15.0 as its canonical workspace manager:
+
+```bash
+corepack enable
+corepack prepare pnpm@9.15.0 --activate
+pnpm install --frozen-lockfile
+pnpm dev
+```
+
+See [docs/LOCAL-DEVELOPMENT.md](docs/LOCAL-DEVELOPMENT.md) for the full gateway, seller, coordinator and safe demo sequence. Live backend configuration requires separate ignored environment profiles. Never commit environment files or private keys.
 
 ---
 
@@ -211,7 +228,7 @@ Fill `.env` before C1/C2 (Hedera, facilitator, later Arkiv/ENS), then run `chmod
 | Layer | Choice |
 |---|---|
 | Monorepo | pnpm workspaces + TypeScript |
-| Console | Next.js (C9) |
+| Console | Node.js static HTML server + TypeScript API (C9) |
 | Gateway | Node JSON-RPC proxy (C4) |
 | Payments | `@x402/hedera` exact · `cryptoTransfer` |
 | Discovery | `@arkiv-network/sdk` |

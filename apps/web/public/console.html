@@ -23,7 +23,7 @@ html[data-theme="dark"] { --bg:#2a2529; --surface:#242023; --card:#f3f0e7; --car
     html[data-theme="dark"] .brand-mark-dark { display:block; }
     main { max-width:1280px; margin:0 auto; padding:24px 24px 64px; }
     .intro { display:flex; align-items:end; justify-content:space-between; gap:24px; margin:8px 0 30px; padding-bottom:28px; border-bottom:1px solid var(--border); }
-    .intro h1 { margin:8px 0 10px; font-size:clamp(1rem,5.4vw,3.4rem); line-height:1.05; letter-spacing:-.045em; white-space:nowrap; }
+    .intro h1 { max-width:100%; margin:8px 0 10px; font-size:clamp(1.8rem,5.4vw,3.4rem); line-height:1.05; letter-spacing:-.045em; white-space:normal; overflow-wrap:anywhere; }
     .section-tag { font-size:.72rem; font-weight:700; letter-spacing:.13em; text-transform:uppercase; }
     h1,h2,h3 { margin-top:0; }
     .workspace { display:grid; grid-template-columns:minmax(0, 1.7fr) minmax(310px, .9fr); gap:24px; align-items:start; }
@@ -447,14 +447,18 @@ async function loadEvidence() {
 const themeToggleButton = document.getElementById('themeToggle');
 const themeCurtain = document.getElementById('themeCurtain');
 let themeChanging = false;
+function readStoredTheme() {
+  try { return window.localStorage.getItem('nd-theme'); } catch { return null; }
+}
 function applyTheme(theme) {
-  document.documentElement.setAttribute('data-theme', theme);
-  document.documentElement.style.colorScheme = theme === 'dark' ? 'dark' : 'light';
-  localStorage.setItem('nd-theme', theme);
+  const selected = theme === 'dark' ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', selected);
+  document.documentElement.style.colorScheme = selected;
+  try { window.localStorage.setItem('nd-theme', selected); } catch { /* Storage may be blocked. */ }
   themeToggleButton.setAttribute('aria-pressed', theme === 'dark' ? 'true' : 'false');
   themeToggleButton.setAttribute('aria-label', theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
 }
-const savedTheme = localStorage.getItem('nd-theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+const savedTheme = readStoredTheme() || (window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
 applyTheme(savedTheme);
 themeToggleButton.addEventListener('click', () => {
   if (themeChanging) return;
