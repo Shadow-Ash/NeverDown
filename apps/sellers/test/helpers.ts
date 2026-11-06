@@ -21,6 +21,7 @@ export function testConfig(overrides: Partial<SellerConfig> = {}): SellerConfig 
     rpcUpstreamUrl: null,
     entitlementDbPath: ":memory:",
     databaseUrl: null,
+    trustProxy: false,
     ...overrides,
   };
 }
