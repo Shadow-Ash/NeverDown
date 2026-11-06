@@ -127,6 +127,31 @@ describe("C1 x402 RPC seller", () => {
     } finally { await srv.close(); }
   });
 
+  it("keeps a settled pack usable after a seller restart with PostgreSQL", async (t) => {
+    const databaseUrl = process.env.TEST_POSTGRES_URL;
+    if (!databaseUrl) { t.skip("set TEST_POSTGRES_URL to run the PostgreSQL integration test"); return; }
+    const facilitator = fakeFacilitator();
+    facilitator.verify = async () => ({ isValid: true, payer: "0.0.1111" });
+    facilitator.settle = async () => ({ success: true, transaction: "0.0.1111@1700000000.000000001", network: "hedera:testnet" });
+    const config = testConfig({ databaseUrl });
+    const first = await listen(createApp({ config, facilitatorClient: facilitator }));
+    let token: string;
+    try {
+      const unpaid = await fetch(`${first.baseUrl}/rpc-pack`, { method: "POST", headers: { "content-type": "application/json" }, body: "{}" });
+      assert.equal(unpaid.status, 402);
+      const challenge = decodePaymentRequired(unpaid.headers.get("payment-required")!) as { resource: unknown; accepts: unknown[] };
+      const signature = Buffer.from(JSON.stringify({ x402Version: 2, resource: challenge.resource, accepted: challenge.accepts[0], payload: { transaction: "AAAA" } })).toString("base64");
+      const paid = await fetch(`${first.baseUrl}/rpc-pack`, { method: "POST", headers: { "content-type": "application/json", "payment-signature": signature }, body: "{}" });
+      assert.equal(paid.status, 200);
+      token = (await paid.json() as { token: string }).token;
+    } finally { await first.close(); }
+    const restarted = await listen(createApp({ config, facilitatorClient: facilitator }));
+    try {
+      const rpc = await fetch(`${restarted.baseUrl}/rpc`, { method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${token!}` }, body: JSON.stringify(VALID_RPC) });
+      assert.equal(rpc.status, 200);
+    } finally { await restarted.close(); }
+  });
+
   it("Test C: the decoded challenge advertises the configured Hedera testnet exact payment", async () => {
     const res = await post(ctx, VALID_RPC);
     const challenge = decodePaymentRequired(res.headers.get("payment-required")!) as {

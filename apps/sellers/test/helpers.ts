@@ -20,6 +20,7 @@ export function testConfig(overrides: Partial<SellerConfig> = {}): SellerConfig 
     rpcMode: "mock",
     rpcUpstreamUrl: null,
     entitlementDbPath: ":memory:",
+    databaseUrl: null,
     ...overrides,
   };
 }

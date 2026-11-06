@@ -67,4 +67,11 @@ describe("loadConfig (Test F: configuration safety)", () => {
     assert.throws(() => loadConfig({ ...base, RPC_MODE: "dynamic" }), ConfigError);
     assert.throws(() => loadConfig({ ...base, SELLER_PORT: "70000" }), ConfigError);
   });
+
+  it("uses the platform port and requires durable storage on a dyno", () => {
+    assert.equal(loadConfig({ ...base, PORT: "3456", SELLER_PORT: "4001" }).port, 3456);
+    assert.throws(() => loadConfig({ ...base, DYNO: "web.1" }), /DATABASE_URL/);
+    const cfg = loadConfig({ ...base, DYNO: "web.1", DATABASE_URL: "postgres://user:pass@localhost:5432/neverdown" });
+    assert.equal(cfg.databaseUrl, "postgres://user:pass@localhost:5432/neverdown");
+  });
 });
