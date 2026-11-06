@@ -5,15 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>NeverDown Console</title>
   <style>
-    :root { --bg:#f3f0e7; --surface:#f0ede4; --card:#efece3; --border:#d9d6cf; --muted:#5f5a54; --text:#1e1e1e; --accent:#1e1e1e; --success:#1f8a6a; --warn:#a87b1e; --bad:#c94b4b; }
-html[data-theme="dark"] { --bg:#2a2529; --surface:#242023; --card:#f3f0e7; --border:#1e1a1e; --muted:#9d9891; --text:#f3f0e7; --accent:#f3f0e7; --success:#45d19b; --warn:#f4bf61; --bad:#ff6b6b; }
+    :root { --bg:#f3f0e7; --surface:#f0ede4; --card:#2a2529; --card-text:#f3f0e7; --border:#d9d6cf; --muted:#5f5a54; --text:#1e1e1e; --accent:#1e1e1e; --success:#1f8a6a; --warn:#a87b1e; --bad:#c94b4b; }
+html[data-theme="dark"] { --bg:#2a2529; --surface:#242023; --card:#f3f0e7; --card-text:#2a2529; --border:#1e1a1e; --muted:#9d9891; --text:#f3f0e7; --accent:#f3f0e7; --success:#45d19b; --warn:#f4bf61; --bad:#ff6b6b; }
 
     * { box-sizing:border-box; font-family: ui-sans-serif, system-ui, sans-serif; }
     body { margin:0; background:var(--bg); color:var(--text); }
     main { max-width:1100px; margin:0 auto; padding:24px; }
     h1,h2,h3 { margin-top:0; }
     .grid { display:grid; grid-template-columns: 1fr 1fr; gap:16px; }
-    .card { background:var(--card); border-radius:12px; padding:16px; border:1px solid var(--border); }
+    .card { background:var(--card); color:var(--card-text); border-radius:12px; padding:16px; border:1px solid var(--border); }
     .metric { font-size:1.5rem; font-weight:700; }
     .muted { color:var(--muted); font-size:0.9rem; }
     button { border:0; border-radius:10px; padding:10px 14px; cursor:pointer; font-weight:700; }
@@ -21,7 +21,7 @@ html[data-theme="dark"] { --bg:#2a2529; --surface:#242023; --card:#f3f0e7; --bor
     .danger { background:var(--bad); color:#200505; }
     .ok { background:var(--success); color:#04120b; }
     label { display:block; margin-bottom:6px; color:var(--muted); font-size:.9rem; }
-    input, select { width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--border); background:var(--surface); color:var(--text); margin-bottom:10px; }
+    input, select { width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--border); background:var(--bg); color:var(--text); margin-bottom:10px; }
     .theme-toggle { position:fixed; top:18px; right:18px; z-index:1000; background:var(--surface); color:var(--text); border:1px solid var(--border); min-width:96px; }
     pre { white-space:pre-wrap; word-break:break-word; margin:8px 0 0; font-size:.85rem; color:#d9d5cc; }
     .step { margin:8px 0; padding:10px 14px; border-left:4px solid #2b3442; border-radius:8px; background:#111722; }
