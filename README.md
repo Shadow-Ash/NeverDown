@@ -202,7 +202,7 @@ npx pnpm@9.15.0 install
 npx pnpm@9.15.0 -r list --depth -1
 ```
 
-Fill `.env` before C1/C2 (Hedera, facilitator, later Arkiv/ENS). **Never commit `.env`.**
+Fill `.env` before C1/C2 (Hedera, facilitator, later Arkiv/ENS), then run `chmod 600 .env`. **Never commit `.env`.**
 
 ---
 
@@ -264,7 +264,7 @@ Fill `.env` before C1/C2 (Hedera, facilitator, later Arkiv/ENS). **Never commit 
 | ENS | `neverdown.eth` |
 | Deny | `RECIPIENT_NOT_ALLOWLISTED` (no settle) |
 
-Setup for live rails: [docs/LIVE-BACKEND-ACCEPTANCE.md](docs/LIVE-BACKEND-ACCEPTANCE.md) · `pnpm env:bootstrap` · `pnpm preflight:live` · `pnpm agent:live`.
+Setup for live rails: [docs/LIVE-BACKEND-ACCEPTANCE.md](docs/LIVE-BACKEND-ACCEPTANCE.md) · one private root `.env` (migrate old profiles with `pnpm env:bootstrap`) · `pnpm preflight:live` · `pnpm agent:live`.
 
 **Security honesty:** C3 payment worker isolation is **PARTIAL** (same-OS-user file access). See [docs/C3-SECURITY-GATE.md](docs/C3-SECURITY-GATE.md).
 

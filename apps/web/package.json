@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "description": "NeverDown console + five-act demo UI (C9)",
   "scripts": {
-    "dev": "node --env-file-if-exists=../../.env.agent --import tsx src/server.ts",
+    "dev": "node ../../scripts/run-with-env.mjs web src/server.ts",
     "build": "echo \"@neverdown/web: static TypeScript server (C9)\"",
     "lint": "echo \"ok\"",
     "typecheck": "tsc -p tsconfig.json"

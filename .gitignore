@@ -4,6 +4,7 @@ dist/
 .turbo/
 .vercel/
 .env
+.env.tmp-*
 .env.local
 *.log
 .DS_Store

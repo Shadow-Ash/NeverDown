@@ -1,7 +1,7 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { spawn } from "node:child_process";
 import { readFileSync, existsSync } from "node:fs";
-import { join, resolve, extname } from "node:path";
+import { join, resolve, extname, sep } from "node:path";
 import { IncidentLedger } from "../../../packages/core/src/agent/coordinator.js";
 import { evidenceResponse } from "./evidence.js";
 
@@ -75,19 +75,16 @@ async function handleApi(req: IncomingMessage, res: ServerResponse, pathname: st
     const body = await readBody(req);
     const scenario = body.scenario === "deny" ? "deny" : "procure";
     const live = process.env.AGENT_LIVE === "true" || body.live === true;
-    const script = live
-      ? (scenario === "deny" ? ["agent:deny-live"] : ["agent:live"])
-      : ["agent:demo", "--scenario", scenario];
-    const pnpm = spawn("pnpm", script, {
+    const script = [join(ROOT, "scripts/run-with-env.mjs"), "agent", "scripts/agent-demo.ts", "--scenario", scenario, ...(live ? ["--live"] : [])];
+    const agent = spawn(process.execPath, script, {
       cwd: ROOT,
       env: process.env,
       stdio: ["ignore", "pipe", "pipe"],
-      shell: true,
     });
     let out = "";
-    pnpm.stdout.on("data", (c) => (out += c));
-    pnpm.stderr.on("data", (c) => (out += c));
-    pnpm.on("close", (code) => {
+    agent.stdout.on("data", (c) => (out += c));
+    agent.stderr.on("data", (c) => (out += c));
+    agent.on("close", (code) => {
       let parsed: unknown = null;
       const start = out.indexOf("{");
       const end = out.lastIndexOf("}");
@@ -126,7 +123,11 @@ createServer(async (req, res) => {
   const url = new URL(req.url || "/", "http://localhost");
   if (url.pathname.startsWith("/api/")) return handleApi(req, res, url.pathname);
   const file = url.pathname === "/" ? "index.html" : url.pathname.replace(/^\/+/, "");
-  const path = join(PUBLIC, file);
+  const path = resolve(PUBLIC, file);
+  if (!path.startsWith(`${PUBLIC}${sep}`) || file.split(/[\\/]/).some((segment) => segment.startsWith("."))) {
+    send(res, 404, "not found", "text/plain");
+    return;
+  }
   if (existsSync(path)) {
     try {
       const body = readFileSync(path);
