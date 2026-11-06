@@ -108,12 +108,19 @@ export async function runAgentScenario(
     return { schemaVersion: "neverdown-evidence-v1", scenario, success: false, objective: "Procure replacement capability and install standby", steps: [...steps, step("resolve_seller", false, { ensName: selected.sellerens }, undefined, "ENS endpoint differs from Arkiv offer")], selectedOffer: selected, ens, notes: [...notes, "ENS endpoint differs from Arkiv offer"] };
   }
 
-  const poc = await tools.proof_of_capability({
-    rpcUrl: selected.probeurl,
-    expectedChainId,
-    payTo: selected.payto,
-    ensPayTo: ens.records.hederaAccount ?? selected.payto,
-  });
+  let poc: Awaited<ReturnType<AgentToolBelt["proof_of_capability"]>>;
+  try {
+    poc = await tools.proof_of_capability({
+      rpcUrl: selected.probeurl,
+      expectedChainId,
+      payTo: selected.payto,
+      ensPayTo: ens.records.hederaAccount ?? selected.payto,
+    });
+  } catch (e) {
+    const message = e instanceof Error ? e.message : "capability probe failed";
+    steps.push(step("proof_of_capability", false, { rpcUrl: selected.probeurl }, undefined, message));
+    return { schemaVersion: "neverdown-evidence-v1", scenario, success: false, objective: "Procure replacement capability and install standby", steps, selectedOffer: selected, ens, notes: [...notes, message] };
+  }
   steps.push(step("proof_of_capability", poc.pass, { rpcUrl: selected.probeurl }, poc));
   if (!poc.pass) {
     return {

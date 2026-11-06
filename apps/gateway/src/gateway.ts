@@ -315,7 +315,7 @@ export class GatewayController {
     };
   }
 
-  installStandby(request: unknown): { ok: boolean; status: number; body: unknown } {
+  async installStandby(request: unknown): Promise<{ ok: boolean; status: number; body: unknown }> {
     const body = (request ?? {}) as { url?: unknown; rpcUrl?: unknown; probeUrl?: unknown; entitlementToken?: unknown };
     if (body.entitlementToken !== undefined && (typeof body.entitlementToken !== "string" || !/^[A-Za-z0-9_-]{32,128}$/.test(body.entitlementToken))) {
       return { ok: false, status: 400, body: { error: "invalid entitlement token" } };
@@ -350,6 +350,18 @@ export class GatewayController {
       return { ok: false, status: 400, body: { error: "standby url must differ from primary" } };
     }
 
+    const verification = await probeRpcProvider(
+      probeUrl ?? url,
+      this.config.chainId,
+      this.config.requestTimeoutMs,
+      this.referenceBlock,
+      this.config.staleBlockTolerance,
+      probeUrl ? undefined : typeof body.entitlementToken === "string" ? body.entitlementToken : undefined,
+    );
+    if (!verification.healthy) {
+      return { ok: false, status: 422, body: { error: "candidate failed health verification", reason: verification.reason } };
+    }
+
     const existing = this.config.providers.find((p) => p.id === "standby");
     const oldUrl = existing?.url ?? null;
     if (existing) {
@@ -364,16 +376,16 @@ export class GatewayController {
     this.providerStatus.set("standby", {
       id: "standby",
       url,
-      healthy: false,
-      healthySince: null,
-      lastCheckAt: null,
-      consecutiveSuccesses: 0,
+      healthy: true,
+      healthySince: Date.now(),
+      lastCheckAt: Date.now(),
+      consecutiveSuccesses: 1,
       consecutiveFailures: 0,
-      chainId: null,
-      blockNumber: null,
-      lastKnownBlockNumber: null,
-      latencyMs: null,
-      reason: "installed; awaiting health probe",
+      chainId: verification.chainId,
+      blockNumber: verification.blockNumber,
+      lastKnownBlockNumber: verification.blockNumber,
+      latencyMs: verification.latencyMs,
+      reason: "installed after health verification",
       lastError: null,
     });
     this.logEvent("standby", "standby installed", this.activeId, this.activeId, "pass", `oldUrl=${oldUrl ?? "none"} newUrl=${url}`);

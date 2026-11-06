@@ -240,3 +240,18 @@ it("gives each gateway runtime a distinct incident namespace", () => {
   assert.ok(first.snapshot().runtimeId);
   assert.notEqual(first.snapshot().runtimeId, second.snapshot().runtimeId);
 });
+
+it("keeps the last healthy standby when a new candidate fails verification", async () => {
+  const old = await startMockRpc({ chainId: 11155111, blockNumber: 1000 });
+  const cfg = baseConfig({ providers: [{ id: "standby", url: old.url }], internalApiEnabled: true, internalToken: "admin-test-token" }) as never;
+  const { app, controller } = createGatewayApp({ config: cfg });
+  const server = await listen(app);
+  try {
+    await controller.probeOnce();
+    assert.equal(controller.getStatus("standby")?.healthy, true);
+    const failed = await fetch(`${server.baseUrl}/_internal/install-standby`, { method: "POST", headers: { "content-type": "application/json", "x-gateway-internal-token": "admin-test-token" }, body: JSON.stringify({ url: "http://127.0.0.1:1/rpc" }) });
+    assert.equal(failed.status, 422);
+    assert.equal(controller.activeProviderUrl(), old.url);
+    assert.equal(controller.getStatus("standby")?.healthy, true);
+  } finally { await server.close(); await old.stopped(); }
+});

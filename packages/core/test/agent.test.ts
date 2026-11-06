@@ -7,6 +7,11 @@ describe("C8 supreme agent (hermetic)", () => {
     const tools = createLiveToolBelt({ ENS_RPC_URL: "https://example.com", ENS_ALLOWLIST_NAMES: "", POLICY_DB_PATH: ":memory:" });
     await assert.rejects(tools.resolve_seller({ ensName: "unknown.eth", expectedPayTo: "0.0.1" }), /ENS_ALLOWLIST_NAMES/);
   });
+
+  it("live capability proof requires an independent reference RPC", async () => {
+    const tools = createLiveToolBelt({ POLICY_DB_PATH: ":memory:" });
+    await assert.rejects(tools.proof_of_capability({ rpcUrl: "http://candidate.local/probe", expectedChainId: 11155111, payTo: "0.0.1", ensPayTo: "0.0.1" }), /POC_REFERENCE_RPC/);
+  });
   it("probes the public URL and installs only the RPC URL after settlement", async () => {
     const tools = createHermeticToolBelt();
     const probed: string[] = [];
@@ -67,6 +72,17 @@ describe("C8 supreme agent (hermetic)", () => {
     const receipt = await runAgentScenario("procure", tools);
     assert.equal(receipt.success, false);
     assert.equal(probed, false);
+  });
+
+  it("records a failed capability probe without starting a purchase", async () => {
+    const tools = createHermeticToolBelt();
+    let purchased = false;
+    tools.proof_of_capability = async () => { throw new Error("probe unavailable"); };
+    tools.request_purchase = async () => { purchased = true; return { approved: true, settled: true }; };
+    const receipt = await runAgentScenario("procure", tools);
+    assert.equal(receipt.success, false);
+    assert.equal(purchased, false);
+    assert.ok(receipt.steps.some((step) => step.tool === "proof_of_capability" && !step.ok));
   });
   it("procure: discover → ens → poc → purchase → install", async () => {
     const tools = createHermeticToolBelt();

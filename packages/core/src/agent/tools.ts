@@ -198,9 +198,11 @@ export function createLiveToolBelt(env: NodeJS.ProcessEnv = process.env): AgentT
       return resolveAndValidateEnsSeller(ensName, expectedPayTo, rpc, allow);
     },
     async proof_of_capability(input) {
+      const referenceRpcUrl = env.POC_REFERENCE_RPC?.trim();
+      if (!referenceRpcUrl) throw new Error("POC_REFERENCE_RPC required for live capability proof");
       return proofOfCapability({
         ...input,
-        referenceRpcUrl: env.POC_REFERENCE_RPC?.trim(),
+        referenceRpcUrl,
       });
     },
     async request_purchase({ purchaseId, serviceId, sellerUrl, purchaseUrl, offerEntityKey, payTo, amountTinybars }) {
