@@ -138,6 +138,6 @@ createServer(async (req, res) => {
   }
   send(res, 404, "not found", "text/plain");
 }).listen(PORT, "127.0.0.1", () => {
-  console.log(`NeverDown console listening on http://localhost:${PORT}`);
+  console.log(`NeverDown site listening on http://localhost:${PORT} (console: /console.html)`);
   console.log(`Gateway: ${GATEWAY_URL}`);
 });

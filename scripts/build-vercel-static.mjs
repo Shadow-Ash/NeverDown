@@ -7,6 +7,7 @@ const source = join(root, "apps", "web", "public");
 const output = join(root, "dist-vercel");
 const assets = [
   "index.html",
+  "console.html",
   "light-nd.png",
   "dark-nd.png",
   "fonts/OFL.txt",
