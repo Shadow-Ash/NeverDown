@@ -18,7 +18,6 @@ function send(res: ServerResponse, status: number, body: unknown, contentType = 
 }
 
 const MAX_BODY_BYTES = 16 * 1024;
-const MAX_BODY_BYTES = 16 * 1024;
 function readBody(req: IncomingMessage): Promise<Record<string, unknown>> {
   return new Promise((resolveBody, rejectBody) => {
     let data = "";

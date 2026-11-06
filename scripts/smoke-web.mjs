@@ -1,10 +1,12 @@
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
+import { rmSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { setTimeout as delay } from "node:timers/promises";
 const port = 3100 + Math.floor(Math.random() * 1000);
 const child = spawn(process.execPath, ["--import", "tsx", "src/server.ts"], {
   cwd: new URL("../apps/web/", import.meta.url),
-  env: { ...process.env, WEB_PORT: String(port), INCIDENT_DB_PATH: ":memory:" },
+  env: { ...process.env, WEB_PORT: String(port), INCIDENT_DB_PATH: `neverdown-smoke-${process.pid}.sqlite` },
   stdio: ["ignore", "pipe", "pipe"],
 });
 let output = "";
@@ -33,4 +35,6 @@ try {
 } finally {
   child.kill("SIGTERM");
   await Promise.race([new Promise(resolve => child.once("exit", resolve)), delay(2000)]);
+  const dbPath = fileURLToPath(new URL(`../neverdown-smoke-${process.pid}.sqlite`, import.meta.url));
+  for (const suffix of ["", "-wal", "-shm"]) rmSync(dbPath + suffix, { force: true });
 }

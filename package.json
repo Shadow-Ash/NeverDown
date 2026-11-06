@@ -54,5 +54,9 @@
   "workspaces": [
     "apps/*",
     "packages/*"
-  ]
+  ],
+  "overrides": {
+    "@hiero-ledger/sdk": "2.90.1",
+    "@hiero-ledger/proto": "2.32.0"
+  }
 }
