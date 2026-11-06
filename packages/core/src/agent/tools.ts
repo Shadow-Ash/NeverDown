@@ -105,7 +105,8 @@ export function createHermeticToolBelt(opts?: {
         latencyMs: 12,
       };
     },
-    async request_purchase({ purchaseId, serviceId, payTo, amountTinybars }) {
+    async request_purchase({ purchaseId, serviceId, sellerUrl, payTo, amountTinybars }) {
+      const endpoint = sellerUrl || "http://candidate-rpc.local";
       const policy = loadPolicyConfig({
         HEDERA_NETWORK: "testnet",
         HEDERA_SPEND_ID: "0.0.1111",
@@ -116,13 +117,15 @@ export function createHermeticToolBelt(opts?: {
         POLICY_TOTAL_BUDGET_TINYBARS: "30000",
         POLICY_SERVICES: serviceId,
         HEDERA_X402_PRICE_SMALLEST_UNITS: "10000",
+        POLICY_ENDPOINTS: endpoint,
       });
       const decision = await authorizePurchase({
         policy,
-        paymentRequirements: challengeFor(payTo, amountTinybars),
+        paymentRequirements: { x402Version: 2, error: "Payment required", resource: { url: `${endpoint}/rpc`, description: "agent", mimeType: "application/json" }, accepts: [{ scheme: "exact", network: "hedera:testnet", amount: amountTinybars, asset: "0.0.0", payTo, maxTimeoutSeconds: 60 }] } as any,
         store,
         serviceId,
         purchaseId,
+        endpoint,
       });
       if (!decision.approved) {
         return { approved: false, denyReason: decision.denyReason, message: decision.message };
@@ -144,6 +147,7 @@ export function createHermeticToolBelt(opts?: {
         POLICY_CAP_TINYBARS: "30000",
         POLICY_TOTAL_BUDGET_TINYBARS: "30000",
         POLICY_SERVICES: serviceId,
+        POLICY_ENDPOINTS: "http://seller",
         HEDERA_X402_PRICE_SMALLEST_UNITS: "10000",
       });
       const decision = await authorizePurchase({
@@ -195,10 +199,11 @@ export function createLiveToolBelt(env: NodeJS.ProcessEnv = process.env): AgentT
       const policy = loadPolicyConfig(env);
       const decision = await authorizePurchase({
         policy,
-        paymentRequirements: challengeFor(payTo, amountTinybars, policy.network, policy.asset),
+        paymentRequirements: { x402Version: 2, error: "Payment required", resource: { url: `${sellerUrl}/rpc`, description: "agent", mimeType: "application/json" }, accepts: [{ scheme: "exact", network: policy.network, amount: amountTinybars, asset: policy.asset, payTo, maxTimeoutSeconds: 60 }] } as any,
         store,
         serviceId,
         purchaseId,
+        endpoint: sellerUrl,
       });
       if (!decision.approved) {
         return { approved: false, denyReason: decision.denyReason, message: decision.message };
@@ -234,6 +239,7 @@ export function createLiveToolBelt(env: NodeJS.ProcessEnv = process.env): AgentT
         store,
         serviceId,
         purchaseId,
+        endpoint: "http://seller",
       });
       return {
         approved: decision.approved,
