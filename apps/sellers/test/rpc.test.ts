@@ -9,6 +9,14 @@ function stubFetch(handler: () => Response | Promise<Response>): typeof fetch {
 }
 
 describe("validateJsonRpc", () => {
+  it("accepts only the latest block header form for eth_getBlockByNumber", () => {
+    const good = validateJsonRpc({ jsonrpc: "2.0", id: 1, method: "eth_getBlockByNumber", params: ["latest", false] });
+    assert.equal(good.ok, true);
+    for (const params of [[], ["0x1", false], ["latest", true]]) {
+      const bad = validateJsonRpc({ jsonrpc: "2.0", id: 1, method: "eth_getBlockByNumber", params });
+      assert.equal(bad.ok, false);
+    }
+  });
   it("accepts the three mock-supported methods", () => {
     for (const method of ["eth_chainId", "eth_blockNumber", "net_version"]) {
       const r = validateJsonRpc({ jsonrpc: "2.0", id: "a", method });
@@ -33,6 +41,9 @@ describe("validateJsonRpc", () => {
 });
 
 describe("mockResult", () => {
+  it("returns a block header for the capability smoke check", () => {
+    assert.deepEqual(mockResult("eth_getBlockByNumber"), { number: "0x10" });
+  });
   it("returns deterministic values for a local mock chain", () => {
     assert.equal(mockResult("eth_chainId"), "0x7a69");
     assert.equal(mockResult("net_version"), "31337");

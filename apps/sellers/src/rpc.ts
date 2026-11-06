@@ -1,4 +1,4 @@
-export const SUPPORTED_METHODS = ["eth_chainId", "eth_blockNumber", "net_version"] as const;
+export const SUPPORTED_METHODS = ["eth_chainId", "eth_blockNumber", "net_version", "eth_getBlockByNumber"] as const;
 export type SupportedMethod = (typeof SUPPORTED_METHODS)[number];
 
 export type JsonRpcId = string | number | null;
@@ -7,7 +7,7 @@ export interface JsonRpcRequest {
   jsonrpc: "2.0";
   id: JsonRpcId;
   method: SupportedMethod;
-  params: [];
+  params: [] | ["latest", false];
 }
 
 export interface JsonRpcError {
@@ -56,14 +56,15 @@ export function validateJsonRpc(body: unknown): ValidationResult {
   if (!isSupported(obj.method)) {
     return { ok: false, id, error: { code: -32601, message: "Method not found or not allowed" } };
   }
-  if (obj.params !== undefined && !(Array.isArray(obj.params) && obj.params.length === 0)) {
-    return { ok: false, id, error: { code: -32602, message: "Invalid params: this method takes no parameters" } };
+  const blockParams = obj.method === "eth_getBlockByNumber";
+  if (blockParams ? !(Array.isArray(obj.params) && obj.params.length === 2 && obj.params[0] === "latest" && obj.params[1] === false) : !(obj.params === undefined || (Array.isArray(obj.params) && obj.params.length === 0))) {
+    return { ok: false, id, error: { code: -32602, message: "Invalid params" } };
   }
 
-  return { ok: true, request: { jsonrpc: "2.0", id, method: obj.method, params: [] } };
+  return { ok: true, request: { jsonrpc: "2.0", id, method: obj.method, params: blockParams ? ["latest", false] : [] } };
 }
 
-export function mockResult(method: SupportedMethod): string {
+export function mockResult(method: SupportedMethod): string | { number: string } {
   switch (method) {
     case "eth_chainId":
       return MOCK_CHAIN_ID_HEX;
@@ -71,6 +72,8 @@ export function mockResult(method: SupportedMethod): string {
       return MOCK_BLOCK_NUMBER_HEX;
     case "net_version":
       return MOCK_NET_VERSION;
+    case "eth_getBlockByNumber":
+      return { number: MOCK_BLOCK_NUMBER_HEX };
   }
 }
 
@@ -89,7 +92,7 @@ export async function forwardToUpstream(
     res = await fetchImpl(url, {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ jsonrpc: "2.0", id: request.id, method: request.method, params: [] }),
+      body: JSON.stringify({ jsonrpc: "2.0", id: request.id, method: request.method, params: request.params }),
       signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
       redirect: "error",
     });

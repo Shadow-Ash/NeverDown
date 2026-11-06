@@ -72,6 +72,28 @@ describe("C1 x402 RPC seller", () => {
     assert.ok(res.headers.get("payment-required"), "PAYMENT-REQUIRED header must be present");
   });
 
+  it("serves only bounded public capability probes without payment", async () => {
+    const app = createApp({ config: testConfig(), facilitatorClient: fakeFacilitator() });
+    const probe = await listen(app);
+    try {
+      for (const [method, params] of [["eth_chainId", []], ["eth_blockNumber", []], ["eth_getBlockByNumber", ["latest", false]]] as const) {
+        const res = await fetch(`${probe.baseUrl}/probe`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }) });
+        assert.equal(res.status, 200);
+        assert.ok((await res.json() as { result?: unknown }).result);
+      }
+      const forbidden = await fetch(`${probe.baseUrl}/probe`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "net_version", params: [] }) });
+      assert.equal(forbidden.status, 400);
+      for (let i = 3; i < 120; i++) {
+        const res = await fetch(`${probe.baseUrl}/probe`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", id: i, method: "eth_chainId", params: [] }) });
+        assert.equal(res.status, 200);
+      }
+      const limited = await fetch(`${probe.baseUrl}/probe`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", id: 121, method: "eth_chainId", params: [] }) });
+      assert.equal(limited.status, 429);
+      const paid = await fetch(`${probe.baseUrl}/rpc`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(VALID_RPC) });
+      assert.equal(paid.status, 402);
+    } finally { await probe.close(); }
+  });
+
   it("Test C: the decoded challenge advertises the configured Hedera testnet exact payment", async () => {
     const res = await post(ctx, VALID_RPC);
     const challenge = decodePaymentRequired(res.headers.get("payment-required")!) as {

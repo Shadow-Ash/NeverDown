@@ -20,6 +20,7 @@ export interface AppOptions {
 }
 
 const RPC_BODY_LIMIT = "16kb";
+const PROBE_LIMIT_PER_MINUTE = 120;
 
 function rpcError(id: JsonRpcId, code: number, message: string) {
   return { jsonrpc: "2.0" as const, id, error: { code, message } };
@@ -52,9 +53,42 @@ export function createApp(opts: AppOptions): express.Express {
 
   const app = express();
   app.disable("x-powered-by");
+  let probeWindowStart = Date.now();
+  let probeCount = 0;
 
   app.get("/health", (_req: Request, res: Response) => {
     res.json({ status: "ok", service: "neverdown-rpc-seller", network: config.network });
+  });
+
+  // Public proof is deliberately narrow and capped per seller process. It cannot
+  // be used as an unrestricted unpaid JSON-RPC proxy.
+  app.post("/probe", express.json({ limit: RPC_BODY_LIMIT }), async (req: Request, res: Response) => {
+    const result = validateJsonRpc(req.body);
+    if (!result.ok) {
+      res.status(400).json(rpcError(result.id, result.error.code, result.error.message));
+      return;
+    }
+    const rpc = result.request;
+    if (rpc.method === "net_version") {
+      res.status(400).json(rpcError(rpc.id, -32601, "Method not allowed for probe"));
+      return;
+    }
+    const now = Date.now();
+    if (now - probeWindowStart >= 60_000) { probeWindowStart = now; probeCount = 0; }
+    if (++probeCount > PROBE_LIMIT_PER_MINUTE) {
+      res.status(429).json(rpcError(rpc.id, -32005, "Probe rate limit exceeded"));
+      return;
+    }
+    if (config.rpcMode === "mock") {
+      res.json({ jsonrpc: "2.0", id: rpc.id, result: mockResult(rpc.method) });
+      return;
+    }
+    const outcome = await forwardToUpstream(config.rpcUpstreamUrl!, rpc, opts.fetchImpl);
+    if (!outcome.ok) {
+      res.status(502).json(rpcError(rpc.id, outcome.error.code, outcome.error.message));
+      return;
+    }
+    res.json({ jsonrpc: "2.0", id: rpc.id, result: outcome.result });
   });
 
   // Body parsing and JSON-RPC shape checks run before payment, so malformed or
