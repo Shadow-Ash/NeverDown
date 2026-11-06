@@ -3,7 +3,7 @@
 **Read this before touching** `packages/core/src/policy/`, `hcs/`, `payment-worker/`, or C8 live `request_purchase`.
 
 **Verdict:** PARTIAL (best-effort process boundary; not OS-enforced isolation).  
-**C8 readiness:** PARTIAL until live agent purchase goes only through the payment worker.
+**C8 readiness:** Worker handoff is wired; live testnet acceptance and OS-enforced separation remain open.
 
 Related: [C3-POLICY-HCS.md](./C3-POLICY-HCS.md) · [C8-AGENT.md](./C8-AGENT.md)
 
@@ -40,7 +40,7 @@ Also:
 
 ```text
 Untrusted agent / parent process
-  │  IPC only: { purchaseId, serviceId, endpoint } + caller token
+  │  IPC only: purchase ID, service ID, approved endpoint, selected offer terms + caller token
   │  NO HEDERA_SPEND_KEY, NO private keys in messages
   ▼
 Payment worker (child process)
@@ -98,15 +98,15 @@ Secrets live on disk (`PAYMENT_WORKER_ENV_FILE`). Not a vault / KMS / OS keychai
 
 Happy-path + replay + unsafe file mode are covered. Coverage for corrupted challenges, truncated IPC frames, and weird extra fields is still **minimal**. Prefer adding tests in `paymentWorkerIpc.test.ts` / protocol unit tests before claiming a stronger gate.
 
-### 5. C8 live path still bypasses the worker (gap)
+### 5. C8 live worker path (not yet live-verified)
 
 Hermetic C8 is fine (mocked tools).
 
-**Live** [`createLiveToolBelt`](../packages/core/src/agent/tools.ts) still calls `authorizePurchase` **in-process** and does **not** settle via the payment worker. That undercuts the C3 isolation story for Act 3 live.
+**Live** [`createLiveToolBelt`](../packages/core/src/agent/tools.ts) now sends selected offer terms to the payment worker and requires a `SETTLED` outcome plus a credential before standby installation. The deny demonstration still evaluates policy in-process without signing. Hermetic IPC tests pass, but a configured Hedera testnet transaction through the full agent path has not been verified.
 
-When hardening C8:
+For live operation:
 
-- Live `request_purchase` should go through `startPaymentWorker` / IPC only.
+- Keep live `request_purchase` through `startPaymentWorker` / IPC only.
 - Deny demos can still exercise policy without keys if they never reach sign.
 - Do not load `HEDERA_SPEND_KEY` into the agent parent for live procure.
 
@@ -139,4 +139,4 @@ See [`.env.example`](../.env.example).
 
 ## Short status line (copy into chat handoffs)
 
-> C3 BigInt hash bug fixed; payment worker IPC + security surface tests green; verdict PARTIAL (same-OS-user DB/cred file; file-based secrets; C8 live still in-process authorize). Prefer worker IPC for any live settle.
+> C3 BigInt hash bug fixed; payment worker IPC + security surface tests green; live C8 purchase now uses worker IPC. Verdict PARTIAL (same-OS-user DB/cred file; file-based secrets; full live testnet acceptance pending).

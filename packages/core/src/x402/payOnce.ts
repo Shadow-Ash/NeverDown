@@ -1,5 +1,7 @@
 import type { x402HTTPClient } from "@x402/core/http";
 import type { SettleResponse } from "@x402/core/types";
+import type { PaymentRequired } from "@x402/core/types";
+import { hashCanonical } from "../hcs/evidence.js";
 import { createHederaX402HttpClient } from "./client.js";
 import type { BuyerConfig } from "./config.js";
 
@@ -35,6 +37,26 @@ export class PayOnceError extends Error {
 
 export function hashscanTestnetUrl(transactionId: string): string {
   return `https://hashscan.io/testnet/transaction/${encodeURIComponent(transactionId)}`;
+}
+
+export async function payForRpcPack(input: { purchaseUrl: string; httpClient: x402HTTPClient; fetchImpl?: typeof fetch; expectedChallenge?: PaymentRequired }): Promise<{ entitlementToken: string; transactionId: string; hashscanUrl: string; httpStatus: number }> {
+  const fetchImpl = input.fetchImpl ?? fetch;
+  const url = input.purchaseUrl;
+  const body = "{}";
+  const unpaid = await fetchImpl(url, { method: "POST", headers: { "content-type": "application/json", accept: "application/json" }, body });
+  if (unpaid.status !== 402) throw new PayOnceError(`Expected HTTP 402 Payment Required from pack endpoint, got ${unpaid.status}`);
+  const unpaidBody = await unpaid.json().catch(() => undefined);
+  const required = input.httpClient.getPaymentRequiredResponse(headerGetter(unpaid.headers), unpaidBody);
+  if (input.expectedChallenge && hashCanonical(required) !== hashCanonical(input.expectedChallenge)) throw new PayOnceError("Pack challenge changed before signing");
+  const payload = await input.httpClient.createPaymentPayload(required);
+  const paymentHeaders = input.httpClient.encodePaymentSignatureHeader(payload);
+  const paid = await fetchImpl(url, { method: "POST", headers: { "content-type": "application/json", accept: "application/json", ...paymentHeaders }, body });
+  if (paid.status !== 200) throw new PayOnceError(`Paid pack request failed with HTTP ${paid.status}`);
+  const settle = input.httpClient.getPaymentSettleResponse(headerGetter(paid.headers));
+  if (!settle.success || !settle.transaction?.trim()) throw new PayOnceError("Pack settlement unconfirmed");
+  const json = await paid.json() as { token?: unknown };
+  if (typeof json.token !== "string" || !/^[A-Za-z0-9_-]{32,128}$/.test(json.token)) throw new PayOnceError("Paid pack response missing valid entitlement token");
+  return { entitlementToken: json.token, transactionId: settle.transaction, hashscanUrl: hashscanTestnetUrl(settle.transaction), httpStatus: paid.status };
 }
 
 const DEFAULT_RPC: JsonRpcRequest = {

@@ -63,6 +63,10 @@ export type PurchaseRequest = {
   purchaseId: string;
   serviceId: string;
   endpoint: string;
+  purchaseUrl?: string;
+  expectedPayTo?: string;
+  expectedAmountTinybars?: string;
+  offerEntityKey?: string;
 };
 
 export type AuditStatus = "disabled" | "published" | "failed";
@@ -74,6 +78,7 @@ export type PurchaseOutcome =
       transactionId: string;
       hashscanUrl: string;
       rpcResult: unknown;
+      entitlementToken?: string;
       httpStatus: number;
       auditStatus: AuditStatus;
     }

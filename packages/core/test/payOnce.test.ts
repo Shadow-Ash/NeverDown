@@ -4,6 +4,7 @@ import {
   PayOnceError,
   hashscanTestnetUrl,
   payForRpcOnce,
+  payForRpcPack,
 } from "../src/x402/payOnce.js";
 import type { x402HTTPClient } from "@x402/core/http";
 import type { PaymentPayload, PaymentRequired, SettleResponse } from "@x402/core/types";
@@ -151,4 +152,18 @@ describe("payForRpcOnce (hermetic, mocked fetch — not live Hedera)", () => {
       (err: unknown) => err instanceof PayOnceError && /Paid request failed/.test(err.message),
     );
   });
+});
+
+it("pays for a pack and returns the settled entitlement token", async () => {
+  const calls: string[] = [];
+  const fetchImpl: typeof fetch = async (input, init) => {
+    calls.push(String(input));
+    if (calls.length === 1) return new Response(JSON.stringify({ error: "Payment required" }), { status: 402, headers: { "PAYMENT-REQUIRED": encodeHeader({ x402Version: 2, accepts: [] }) } });
+    assert.ok(new Headers(init?.headers).has("PAYMENT-SIGNATURE"));
+    return new Response(JSON.stringify({ token: "settled-token-12345678901234567890", maxRequests: 100 }), { status: 200, headers: { "PAYMENT-RESPONSE": encodeHeader({ success: true, transaction: "0.0.1@1.2", network: "hedera:testnet" }) } });
+  };
+  const result = await payForRpcPack({ purchaseUrl: "http://localhost:4001/rpc-pack", httpClient: fakeHttpClient(), fetchImpl });
+  assert.deepEqual(calls, ["http://localhost:4001/rpc-pack", "http://localhost:4001/rpc-pack"]);
+  assert.equal(result.entitlementToken, "settled-token-12345678901234567890");
+  assert.equal(result.transactionId, "0.0.9185802@1700000000.000000001");
 });

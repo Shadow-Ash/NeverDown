@@ -5,6 +5,7 @@ import { openBudgetStore } from "../policy/budgetStore.js";
 import { authorizePurchase } from "../policy/engine.js";
 import { loadPolicyConfig } from "../policy/config.js";
 import { proofOfCapability } from "../poc/proofOfCapability.js";
+import { startPaymentWorker } from "../payment-worker/client.js";
 import type { PaymentRequired } from "@x402/core/types";
 import type { AgentToolBelt } from "./types.js";
 
@@ -70,7 +71,7 @@ export function createHermeticToolBelt(opts?: {
       ensName: "good.neverdown.eth",
       normalizedEnsName: "good.neverdown.eth",
       address: "0x1111111111111111111111111111111111111111",
-      records: { hederaAccount: "0.0.11326899", x402Url: "http://localhost:4001", category: "rpc" },
+      records: { hederaAccount: "0.0.11326899", x402Url: "http://candidate-rpc.local", category: "rpc" },
       resolverAddress: null,
     },
   };
@@ -138,7 +139,7 @@ export function createHermeticToolBelt(opts?: {
         return { approved: false, denyReason: decision.denyReason, message: decision.message };
       }
       store.transition(purchaseId, "SETTLED", "committed");
-      return { approved: true, settled: true, transactionId: `hermetic-tx-${purchaseId}` };
+      return { approved: true, settled: true, status: "SETTLED", transactionId: `hermetic-tx-${purchaseId}`, entitlementToken: "hermetic-token-12345678901234567890" };
     },
     async install_standby({ rpcUrl }) {
       installed.push({ url: rpcUrl });
@@ -202,35 +203,27 @@ export function createLiveToolBelt(env: NodeJS.ProcessEnv = process.env): AgentT
         referenceRpcUrl: env.POC_REFERENCE_RPC?.trim(),
       });
     },
-    async request_purchase({ purchaseId, serviceId, sellerUrl, payTo, amountTinybars }) {
-      const policy = loadPolicyConfig(env);
-      const decision = await authorizePurchase({
-        policy,
-        paymentRequirements: { x402Version: 2, error: "Payment required", resource: { url: `${sellerUrl}/rpc`, description: "agent", mimeType: "application/json" }, accepts: [{ scheme: "exact", network: policy.network, amount: amountTinybars, asset: policy.asset, payTo, maxTimeoutSeconds: 60 }] } as any,
-        store,
-        serviceId,
-        purchaseId,
-        endpoint: sellerUrl,
-      });
-      if (!decision.approved) {
-        return { approved: false, denyReason: decision.denyReason, message: decision.message };
-      }
-      // Reservation already RESERVED by authorizePurchase. Live x402 settle stays opt-in (pay:once).
-      return {
-        approved: true,
-        settled: false,
-        transactionId: undefined,
-        message: `authorized/reserved for ${sellerUrl}; run pnpm pay:once for live settle if needed`,
-      };
+    async request_purchase({ purchaseId, serviceId, sellerUrl, purchaseUrl, offerEntityKey, payTo, amountTinybars }) {
+      const envFile = env.PAYMENT_WORKER_ENV_FILE?.trim();
+      if (!envFile || !purchaseUrl || !offerEntityKey) return { approved: false, settled: false, status: "DENIED", denyReason: "WORKER_CONFIG_MISSING", message: "live worker configuration or selected offer incomplete" };
+      let worker: ReturnType<typeof startPaymentWorker> | undefined;
+      try {
+        worker = startPaymentWorker({ envFile });
+        const outcome = await worker.requestPurchase({ purchaseId, serviceId, endpoint: sellerUrl, purchaseUrl, offerEntityKey, expectedPayTo: payTo, expectedAmountTinybars: amountTinybars });
+        if (outcome.status !== "SETTLED") return { approved: false, settled: false, status: outcome.status, denyReason: outcome.denyReason, message: outcome.message };
+        return { approved: true, settled: true, status: "SETTLED", transactionId: outcome.transactionId, entitlementToken: outcome.entitlementToken };
+      } catch {
+        return { approved: false, settled: false, status: "UNCERTAIN", denyReason: "WORKER_UNAVAILABLE", message: "payment worker outcome uncertain; reconcile before retry" };
+      } finally { worker?.close(); }
     },
-    async install_standby({ rpcUrl }) {
+    async install_standby({ rpcUrl, probeUrl, entitlementToken }) {
       const res = await fetch(`${gatewayUrl}/_internal/install-standby`, {
         method: "POST",
         headers: {
           "content-type": "application/json",
           ...(gatewayToken ? { "x-gateway-internal-token": gatewayToken } : {}),
         },
-        body: JSON.stringify({ url: rpcUrl }),
+        body: JSON.stringify({ url: rpcUrl, probeUrl, entitlementToken }),
       });
       const detail = await res.json().catch(() => ({}));
       if (!res.ok) {

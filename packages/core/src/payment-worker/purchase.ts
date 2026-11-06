@@ -4,7 +4,8 @@ import { authorizePurchase } from "../policy/engine.js";
 import type { PolicyConfig } from "../policy/types.js";
 import type { PurchaseOutcome } from "../policy/types.js";
 import { BudgetStore } from "../policy/budgetStore.js";
-import { payForRpcOnce } from "../x402/payOnce.js";
+import { payForRpcOnce, payForRpcPack } from "../x402/payOnce.js";
+import type { PurchaseRequest } from "./protocol.js";
 import { createHederaX402HttpClient } from "../x402/client.js";
 import type { HederaBuyerCredentials } from "../x402/client.js";
 import { hashCanonical } from "../hcs/evidence.js";
@@ -93,7 +94,7 @@ async function anchor(_env: NodeJS.ProcessEnv, deps: PurchaseDeps, id: string, p
 }
 
 
-export async function runPurchase(env: NodeJS.ProcessEnv, deps: PurchaseDeps, credentials: PurchaseCredentials, request: { purchaseId: string; serviceId: string; endpoint: string }, fetchImplOverride?: typeof fetch): Promise<PurchaseOutcome> {
+export async function runPurchase(env: NodeJS.ProcessEnv, deps: PurchaseDeps, credentials: PurchaseCredentials, request: PurchaseRequest, fetchImplOverride?: typeof fetch): Promise<PurchaseOutcome> {
   void env;
   const policy = deps.policy;
   const store = deps.store;
@@ -109,15 +110,21 @@ export async function runPurchase(env: NodeJS.ProcessEnv, deps: PurchaseDeps, cr
 
   // 1) fetch unpaid challenge
   let challenge: any;
-  let resourceUrl = `${endpoint}/rpc`;
+  const purchaseUrl = request.purchaseUrl ?? `${endpoint}/rpc`;
+  let resourceUrl = purchaseUrl;
   try {
-    const unpaid = await fetchImpl(`${endpoint}/rpc`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "eth_blockNumber", params: [] }) });
+    const unpaid = await fetchImpl(purchaseUrl, { method: "POST", headers: { "content-type": "application/json" }, body: request.purchaseUrl ? "{}" : JSON.stringify({ jsonrpc: "2.0", id: 1, method: "eth_blockNumber", params: [] }) });
     if (unpaid.status !== 402) throw new Error("invalid challenge");
     const raw = unpaid.headers.get("payment-required");
     if (!raw) throw new Error("missing payment-required header");
     challenge = JSON.parse(Buffer.from(raw, "base64").toString("utf8"));
     resourceUrl = String((challenge as any)?.resource?.url ?? resourceUrl);
     if (!resourceUrl) throw new Error("missing challenge resource");
+    if (resourceUrl !== purchaseUrl) throw new Error("challenge resource differs from selected offer");
+    if (request.purchaseUrl) {
+      const accepts = Array.isArray(challenge?.accepts) ? challenge.accepts : [];
+      if (accepts.length !== 1 || accepts[0]?.scheme !== policy.scheme || accepts[0]?.network !== policy.network || accepts[0]?.asset !== policy.asset || String(accepts[0]?.payTo) !== request.expectedPayTo || bigintStr(accepts[0]?.amount) !== request.expectedAmountTinybars) throw new Error("challenge terms differ from selected offer");
+    }
     if (new URL(resourceUrl).origin !== new URL(endpoint).origin) throw new Error("origin mismatch");
     if (!policy.allowedEndpoints.includes(normalizeEndpoint(resourceUrl))) {
       // resource must live on an approved endpoint, exact origin
@@ -193,7 +200,9 @@ export async function runPurchase(env: NodeJS.ProcessEnv, deps: PurchaseDeps, cr
   const sellerUrl = endpoint;
   let result: any;
   try {
-    result = await payForRpcOnce({ sellerUrl, httpClient, fetchImpl });
+    result = request.purchaseUrl
+      ? await payForRpcPack({ purchaseUrl, httpClient, fetchImpl, expectedChallenge: challenge })
+      : await payForRpcOnce({ sellerUrl, httpClient, fetchImpl });
   } catch (e) {
     store.markUncertain(request.purchaseId, e instanceof Error ? e.message : "unknown");
     const uncertainId = `outbox-${request.purchaseId}-UNCERTAIN`;
@@ -230,6 +239,7 @@ export async function runPurchase(env: NodeJS.ProcessEnv, deps: PurchaseDeps, cr
     transactionId: result.transactionId,
     hashscanUrl: result.hashscanUrl,
     rpcResult: result.rpcResult,
+    ...(request.purchaseUrl ? { entitlementToken: result.entitlementToken } : {}),
     httpStatus: result.httpStatus,
     auditStatus: settleAudit,
   };

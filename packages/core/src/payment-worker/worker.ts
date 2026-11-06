@@ -17,11 +17,7 @@ export function createWorkerServer(deps: any, send: (msg: any) => void) {
   async function runOne(reqMsg: any) {
     running = true;
     try {
-      const outcome = await runPurchase(process.env, deps, loadedCredentials, {
-        purchaseId: reqMsg.request.purchaseId,
-        serviceId: reqMsg.request.serviceId,
-        endpoint: reqMsg.request.endpoint,
-      });
+      const outcome = await runPurchase(process.env, deps, loadedCredentials, reqMsg.request);
       const serial = JSON.parse(JSON.stringify(outcome, (_k, v) => (typeof v === "bigint" ? v.toString() : v))) as any;
       send({ type: "result", requestId: reqMsg.requestId, outcome: serial });
     } catch (e) {

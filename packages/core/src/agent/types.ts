@@ -9,6 +9,9 @@ export type AgentPurchaseResult = {
   message?: string;
   transactionId?: string;
   settled?: boolean;
+  status?: "SETTLED" | "DENIED" | "RELEASED" | "UNCERTAIN";
+  /** Internal handoff only; never put this in an evidence receipt. */
+  entitlementToken?: string;
 };
 
 export type AgentToolName =
@@ -37,7 +40,7 @@ export type EvidenceReceipt = {
   selectedOffer?: CapabilityOfferRow | null;
   ens?: EnsSellerResolution | null;
   poc?: ProofOfCapabilityResult | null;
-  purchase?: AgentPurchaseResult | null;
+  purchase?: Omit<AgentPurchaseResult, "entitlementToken"> | null;
   standbyInstall?: unknown;
   denyReason?: string;
   notes: string[];
@@ -64,11 +67,13 @@ export type RequestPurchaseTool = (input: {
   purchaseId: string;
   serviceId: string;
   sellerUrl: string;
+  purchaseUrl?: string;
+  offerEntityKey?: string;
   payTo: string;
   amountTinybars: string;
-}) => Promise<{ approved: boolean; denyReason?: string; message?: string; transactionId?: string; settled?: boolean }>;
+}) => Promise<AgentPurchaseResult>;
 
-export type InstallStandbyTool = (input: { rpcUrl: string }) => Promise<{ installed: boolean; detail: unknown }>;
+export type InstallStandbyTool = (input: { rpcUrl: string; probeUrl?: string; entitlementToken?: string }) => Promise<{ installed: boolean; detail: unknown }>;
 
 export type ForceBadPurchaseTool = (input: {
   purchaseId: string;

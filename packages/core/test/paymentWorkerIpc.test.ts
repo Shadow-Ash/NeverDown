@@ -16,6 +16,7 @@ const purchaseId = "test-purchase-1";
 const recipient = "0.0.4242";
 const amount = "10000";
 const service = "neverdown-rpc-pack";
+let packPaidRequests = 0;
 
 function envelope(body: any) {
   return Buffer.from(JSON.stringify(body), "utf8").toString("base64");
@@ -25,16 +26,17 @@ before(async () => {
   server = createServer((req, res) => {
     const hasSig = req.headers["payment-signature"] || req.headers["PAYMENT-SIGNATURE"];
     if (hasSig) {
+      if (req.url === "/rpc-pack") packPaidRequests++;
       res.statusCode = 200;
       res.setHeader("Content-Type", "application/json");
       res.setHeader("PAYMENT-RESPONSE", envelope({ success: true, transaction: "0.0.1@123.456", network: "hedera:testnet" }));
-      res.end(JSON.stringify({ jsonrpc: "2.0", id: 1, result: "0x1" }));
+      res.end(req.url === "/rpc-pack" ? JSON.stringify({ token: "settled-pack-token-1234567890123456", maxRequests: 100 }) : JSON.stringify({ jsonrpc: "2.0", id: 1, result: "0x1" }));
     } else {
       res.statusCode = 402;
       res.setHeader("Payment-Required", envelope({
         x402Version: 2,
         error: "Payment required",
-        resource: { url: `${siteRoot()}/rpc`, mimeType: "application/json" },
+        resource: { url: `${siteRoot()}${req.url === "/rpc-pack" ? "/rpc-pack" : "/rpc"}`, mimeType: "application/json" },
         accepts: [{ scheme: "exact", network: "hedera:testnet", amount, asset: "0.0.0", payTo: recipient, maxTimeoutSeconds: 60, extra: { feePayer: "0.0.1111" } }],
       }));
       res.end(JSON.stringify({ error: "Payment required" }));
@@ -88,6 +90,32 @@ function envContent(portStr: string, dbPath: string) {
 }
 
 describe("payment worker IPC", () => {
+  it("checks offer terms before signing and returns the settled pack credential", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "nd-ipc-pack-"));
+    const envFile = join(dir, ".env.worker");
+    writeFileSync(envFile, envContent(String(serverPort), join(dir, "policy.sqlite")), { mode: 0o600 });
+    chmodSync(envFile, 0o600);
+    const { child, token } = await spawnWorker(envFile);
+    const purchase = (requestId: string, request: Record<string, unknown>) => new Promise<any>((resolve) => {
+      child.once("message", (msg: any) => resolve(msg));
+      child.send({ type: "purchase", requestId, token, request });
+    });
+    try {
+      const terms = { serviceId: service, endpoint: siteRoot(), purchaseUrl: `${siteRoot()}/rpc-pack`, expectedAmountTinybars: amount, expectedPayTo: recipient, offerEntityKey: "0xabc" };
+      const before = packPaidRequests;
+      const bad = await purchase("bad-pack", { ...terms, purchaseId: "bad-pack", expectedPayTo: "0.0.9999" });
+      assert.equal(bad.outcome?.status, "DENIED");
+      assert.equal(packPaidRequests, before);
+      const good = await purchase("good-pack", { ...terms, purchaseId: "good-pack" });
+      assert.equal(good.outcome?.status, "SETTLED");
+      assert.equal(good.outcome?.entitlementToken, "settled-pack-token-1234567890123456");
+      assert.equal(packPaidRequests, before + 1);
+    } finally {
+      child.kill();
+      await new Promise((r) => setTimeout(r, 300));
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
   it("rejects a worker whose credential file is group/world readable", async () => {
     if (platform() === "win32") {
       // NTFS does not expose reliable POSIX 0600 bits; mode check is unix-only in worker.ts.

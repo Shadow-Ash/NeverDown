@@ -75,6 +75,11 @@ export async function runAgentScenario(
   const selected = offers[0]!; // already cheapest-first from hermetic; live should sort too
   notes.push(`selected cheapest offer ${selected.entityKey} @ ${selected.pricetinybars} tinybars`);
 
+  const expiry = Date.parse(selected.expiresat);
+  if (selected.schemaversion !== 2n || selected.chainid !== BigInt(expectedChainId) || !Number.isFinite(expiry) || expiry <= Date.now()) {
+    return { schemaVersion: "neverdown-evidence-v1", scenario, success: false, objective: "Procure replacement capability and install standby", steps, selectedOffer: selected, notes: [...notes, "selected offer invalid, expired, or wrong chain"] };
+  }
+
   let ens = null;
   try {
     ens = await tools.resolve_seller({ ensName: selected.sellerens, expectedPayTo: selected.payto });
@@ -91,6 +96,16 @@ export async function runAgentScenario(
       selectedOffer: selected,
       notes: [...notes, message],
     };
+  }
+
+  try {
+    const ensEndpoint = new URL(ens.records.x402Url ?? "");
+    const offerEndpoint = new URL(selected.serviceurl);
+    if (ensEndpoint.origin !== offerEndpoint.origin || ensEndpoint.pathname.replace(/\/+$/, "") !== offerEndpoint.pathname.replace(/\/+$/, "")) throw new Error("ENS endpoint differs from Arkiv offer");
+    const base = offerEndpoint.toString().replace(/\/+$/, "");
+    if (selected.probeurl !== `${base}/probe` || selected.purchaseurl !== `${base}/rpc-pack` || selected.rpcurl !== `${base}/rpc`) throw new Error("Offer URLs differ from verified seller endpoint");
+  } catch {
+    return { schemaVersion: "neverdown-evidence-v1", scenario, success: false, objective: "Procure replacement capability and install standby", steps: [...steps, step("resolve_seller", false, { ensName: selected.sellerens }, undefined, "ENS endpoint differs from Arkiv offer")], selectedOffer: selected, ens, notes: [...notes, "ENS endpoint differs from Arkiv offer"] };
   }
 
   const poc = await tools.proof_of_capability({
@@ -119,11 +134,15 @@ export async function runAgentScenario(
     purchaseId,
     serviceId,
     sellerUrl: selected.serviceurl,
+    purchaseUrl: selected.purchaseurl,
+    offerEntityKey: selected.entityKey,
     payTo: selected.payto,
     amountTinybars: selected.pricetinybars.toString(),
   });
-  steps.push(step("request_purchase", purchase.approved && purchase.settled === true, { purchaseId, payTo: selected.payto }, purchase));
-  if (!purchase.approved || purchase.settled !== true) {
+  const { entitlementToken, ...publicPurchase } = purchase;
+  const purchaseComplete = purchase.approved && purchase.settled === true && typeof entitlementToken === "string" && entitlementToken.length >= 32;
+  steps.push(step("request_purchase", purchaseComplete, { purchaseId, payTo: selected.payto }, publicPurchase));
+  if (!purchaseComplete) {
     return {
       schemaVersion: "neverdown-evidence-v1",
       scenario,
@@ -133,14 +152,14 @@ export async function runAgentScenario(
       selectedOffer: selected,
       ens,
       poc,
-      purchase,
+      purchase: publicPurchase,
       denyReason: purchase.denyReason,
-      notes: [...notes, purchase.approved ? "purchase not settled — will not install" : "purchase denied"],
+      notes: [...notes, purchase.approved ? "purchase settlement or credential incomplete — will not install" : "purchase denied"],
     };
   }
 
-  const install = await tools.install_standby({ rpcUrl: selected.rpcurl });
-  steps.push(step("install_standby", install.installed, { rpcUrl: selected.rpcurl }, install));
+  const install = await tools.install_standby({ rpcUrl: selected.rpcurl, probeUrl: selected.probeurl, entitlementToken });
+  steps.push(step("install_standby", install.installed, { rpcUrl: selected.rpcurl, probeUrl: selected.probeurl }, install));
 
   return {
     schemaVersion: "neverdown-evidence-v1",
@@ -151,7 +170,7 @@ export async function runAgentScenario(
     selectedOffer: selected,
     ens,
     poc,
-    purchase,
+    purchase: publicPurchase,
     standbyInstall: install.detail,
     notes,
   };

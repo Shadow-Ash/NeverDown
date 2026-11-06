@@ -30,6 +30,44 @@ describe("C8 supreme agent (hermetic)", () => {
     assert.equal(receipt.success, false);
     assert.equal(installed, false);
   });
+
+  it("hands the settled credential to install without exposing it in evidence", async () => {
+    const tools = createHermeticToolBelt();
+    let purchaseInput: Record<string, unknown> | undefined;
+    let installInput: Record<string, unknown> | undefined;
+    tools.request_purchase = async (input) => { purchaseInput = input; return { approved: true, settled: true, transactionId: "tx-1", entitlementToken: "private-token-12345678901234567890" }; };
+    tools.install_standby = async (input) => { installInput = input; return { installed: true, detail: {} }; };
+    const receipt = await runAgentScenario("procure", tools);
+    assert.equal(receipt.success, true);
+    assert.equal(purchaseInput?.purchaseUrl, "http://candidate-rpc.local/rpc-pack");
+    assert.equal(installInput?.probeUrl, "http://candidate-rpc.local/probe");
+    assert.equal(installInput?.entitlementToken, "private-token-12345678901234567890");
+    assert.ok(!JSON.stringify(receipt, (_key, value) => typeof value === "bigint" ? value.toString() : value).includes("private-token"));
+  });
+
+  it("does not install a pack when settlement lacks its credential", async () => {
+    const tools = createHermeticToolBelt();
+    let installed = false;
+    tools.request_purchase = async () => ({ approved: true, settled: true, status: "SETTLED" });
+    tools.install_standby = async () => { installed = true; return { installed: true, detail: {} }; };
+    const receipt = await runAgentScenario("procure", tools);
+    assert.equal(receipt.success, false);
+    assert.equal(installed, false);
+  });
+
+  it("stops before probing when ENS endpoint differs from the offer", async () => {
+    const tools = createHermeticToolBelt();
+    const resolve = tools.resolve_seller;
+    let probed = false;
+    tools.resolve_seller = async (input) => {
+      const result = await resolve(input);
+      return { ...result, records: { ...result.records, x402Url: "http://other-seller.local" } };
+    };
+    tools.proof_of_capability = async () => { probed = true; throw new Error("should not probe"); };
+    const receipt = await runAgentScenario("procure", tools);
+    assert.equal(receipt.success, false);
+    assert.equal(probed, false);
+  });
   it("procure: discover → ens → poc → purchase → install", async () => {
     const tools = createHermeticToolBelt();
     const receipt = await runAgentScenario("procure", tools);

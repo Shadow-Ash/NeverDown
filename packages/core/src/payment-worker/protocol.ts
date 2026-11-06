@@ -18,6 +18,10 @@ export type PurchaseRequest = {
   purchaseId: string;
   serviceId: string;
   endpoint: string;
+  purchaseUrl?: string;
+  expectedPayTo?: string;
+  expectedAmountTinybars?: string;
+  offerEntityKey?: string;
 };
 
 export type PurchaseResultMessage = {
@@ -64,7 +68,7 @@ export function normalizeEndpoint(raw: string): string | undefined {
 
 export function parsePurchaseRequest(value: unknown): PurchaseRequest {
   if (!isRecord(value)) throw new PaymentWorkerError("request must be an object", "INVALID_REQUEST");
-  const extra = Object.keys(value).filter((k) => !["purchaseId", "serviceId", "endpoint"].includes(k));
+  const extra = Object.keys(value).filter((k) => !["purchaseId", "serviceId", "endpoint", "purchaseUrl", "expectedPayTo", "expectedAmountTinybars", "offerEntityKey"].includes(k));
   if (extra.length) throw new PaymentWorkerError("unexpected request fields", "INVALID_REQUEST");
   const purchaseId = value.purchaseId;
   const serviceId = value.serviceId;
@@ -74,7 +78,16 @@ export function parsePurchaseRequest(value: unknown): PurchaseRequest {
   if (typeof endpoint !== "string") throw new PaymentWorkerError("invalid endpoint", "INVALID_ENDPOINT");
   const normalized = normalizeEndpoint(endpoint);
   if (!normalized) throw new PaymentWorkerError("invalid endpoint", "INVALID_ENDPOINT");
-  return { purchaseId, serviceId, endpoint: normalized };
+  const purchaseUrl = value.purchaseUrl;
+  const expectedPayTo = value.expectedPayTo;
+  const expectedAmountTinybars = value.expectedAmountTinybars;
+  const offerEntityKey = value.offerEntityKey;
+  if (purchaseUrl !== undefined && (typeof purchaseUrl !== "string" || normalizeEndpoint(purchaseUrl) !== `${normalized}/rpc-pack`)) throw new PaymentWorkerError("invalid purchaseUrl", "INVALID_ENDPOINT");
+  if (expectedPayTo !== undefined && (typeof expectedPayTo !== "string" || !/^0\.0\.[1-9]\d*$/.test(expectedPayTo))) throw new PaymentWorkerError("invalid expectedPayTo", "INVALID_REQUEST");
+  if (expectedAmountTinybars !== undefined && (typeof expectedAmountTinybars !== "string" || !/^[1-9]\d*$/.test(expectedAmountTinybars))) throw new PaymentWorkerError("invalid expected amount", "INVALID_REQUEST");
+  if (offerEntityKey !== undefined && (typeof offerEntityKey !== "string" || !/^[A-Za-z0-9._:-]{1,120}$/.test(offerEntityKey))) throw new PaymentWorkerError("invalid offerEntityKey", "INVALID_REQUEST");
+  if (purchaseUrl !== undefined && (!expectedPayTo || !expectedAmountTinybars || !offerEntityKey)) throw new PaymentWorkerError("missing expected offer terms", "INVALID_REQUEST");
+  return { purchaseId, serviceId, endpoint: normalized, ...(purchaseUrl !== undefined ? { purchaseUrl, expectedPayTo: expectedPayTo as string, expectedAmountTinybars: expectedAmountTinybars as string, offerEntityKey: offerEntityKey as string } : {}) };
 }
 
 export function parseWorkerRequestMessage(value: unknown): { requestId: string; token: string; request: PurchaseRequest } {

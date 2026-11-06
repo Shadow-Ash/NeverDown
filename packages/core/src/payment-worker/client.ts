@@ -2,12 +2,9 @@ import { fork } from "node:child_process";
 import { randomBytes } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { parsePurchaseRequest } from "./protocol.js";
+import type { PurchaseRequest } from "./protocol.js";
 
-export interface PurchaseRequest {
-  purchaseId: string;
-  serviceId: string;
-  endpoint: string;
-}
+export type { PurchaseRequest } from "./protocol.js";
 
 export type PaymentWorkerHandle = {
   requestPurchase(request: PurchaseRequest): Promise<any>;
