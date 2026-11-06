@@ -82,7 +82,7 @@
     .scope-row strong { font-size:1.08rem; }
     .scope-row span { color:var(--muted); font-size:.85rem; white-space:nowrap; }
     .last-section { padding-bottom:100px; }
-    .last-section .section-heading { max-width:900px; }
+    .last-section .section-heading { max-width:none; font-size:clamp(.95rem,3.5vw,3rem); letter-spacing:-.05em; white-space:nowrap; }
     .site-footer { display:flex; justify-content:space-between; gap:24px; padding-top:26px; padding-bottom:32px; border-top:1px solid var(--line); color:var(--muted); font-size:.9rem; }
     .site-footer p { margin:0; }
     .site-footer a:hover { color:var(--text); }
@@ -188,8 +188,8 @@
   </section>
   <section class="section last-section shell" aria-labelledby="cta-title">
     <span class="eyebrow">See it in action</span>
-    <h2 class="section-heading" id="cta-title">The policy that never let you down</h2>
-    <a class="button button-primary" href="/console.html">Open the five-act console ↗</a>
+    <h2 class="section-heading" id="cta-title">The policy that <em>Never let you</em> Down</h2>
+    <a class="button button-primary" href="/console.html">Open console ↗</a>
     <p class="hero-note">The hosted console is a preview. Live operator actions run in the local backend.</p>
   </section>
 </main>
