@@ -7,9 +7,13 @@ function offer(partial: Partial<CapabilityOfferRow> & Pick<CapabilityOfferRow, "
   return {
     sellerens: "x.eth",
     serviceurl: "http://localhost:4001",
+    probeurl: "http://localhost:4001/probe",
+    purchaseurl: "http://localhost:4001/rpc-pack",
+    rpcurl: "http://localhost:4001/rpc",
+    schemaversion: 2n,
     chainid: 11155111n,
     category: "rpc",
-    expiresat: new Date().toISOString(),
+    expiresat: new Date(Date.now() + 60_000).toISOString(),
     ...partial,
   };
 }
@@ -37,5 +41,15 @@ describe("filterOffers (hermetic)", () => {
     });
     assert.equal(out.length, 1);
     assert.equal(out[0]?.payto, "0.0.2");
+  });
+
+  it("rejects expired, incomplete, and old-version offers", () => {
+    const rows = [
+      offer({ entityKey: "good", payto: "0.0.1", pricetinybars: 1n }),
+      offer({ entityKey: "expired", payto: "0.0.1", pricetinybars: 1n, expiresat: new Date(Date.now() - 1000).toISOString() }),
+      offer({ entityKey: "old", payto: "0.0.1", pricetinybars: 1n, schemaversion: 1n }),
+      offer({ entityKey: "missing", payto: "0.0.1", pricetinybars: 1n, probeurl: "" }),
+    ];
+    assert.deepEqual(filterOffers(rows, { category: "rpc", maxPriceTinybars: 10n }).map((o) => o.entityKey), ["good"]);
   });
 });

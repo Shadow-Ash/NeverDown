@@ -8,6 +8,9 @@ export type SeedOfferSpec = {
   label: string;
   sellerens: string;
   serviceurl: string;
+  probeurl: string;
+  purchaseurl: string;
+  rpcurl: string;
   pricetinybars: bigint;
   chainid: bigint;
   category: string;
@@ -37,6 +40,9 @@ export function defaultSeedSpecs(merchantPayTo: string): SeedOfferSpec[] {
       label: "good-A",
       sellerens: "seller-a.neverdown.eth",
       serviceurl: "http://localhost:4001",
+      probeurl: "http://localhost:4001/probe",
+      purchaseurl: "http://localhost:4001/rpc-pack",
+      rpcurl: "http://localhost:4001/rpc",
       pricetinybars: 10000n,
       chainid: 11155111n,
       category: "rpc",
@@ -48,6 +54,9 @@ export function defaultSeedSpecs(merchantPayTo: string): SeedOfferSpec[] {
       label: "good-B",
       sellerens: "seller-b.neverdown.eth",
       serviceurl: "http://localhost:4002",
+      probeurl: "http://localhost:4002/probe",
+      purchaseurl: "http://localhost:4002/rpc-pack",
+      rpcurl: "http://localhost:4002/rpc",
       pricetinybars: 12000n,
       chainid: 11155111n,
       category: "rpc",
@@ -59,6 +68,9 @@ export function defaultSeedSpecs(merchantPayTo: string): SeedOfferSpec[] {
       label: "expired-C",
       sellerens: "malicious.neverdown.eth",
       serviceurl: "http://evil.example",
+      probeurl: "http://evil.example/probe",
+      purchaseurl: "http://evil.example/rpc-pack",
+      rpcurl: "http://evil.example/rpc",
       pricetinybars: 1n,
       chainid: 11155111n,
       category: "rpc",
@@ -91,6 +103,10 @@ export async function seedCapabilityOffers(opts: {
       {
         sellerens: spec.sellerens,
         serviceurl: spec.serviceurl,
+        schemaversion: u64(2n),
+        probeurl: spec.probeurl,
+        purchaseurl: spec.purchaseurl,
+        rpcurl: spec.rpcurl,
         pricetinybars: u64(spec.pricetinybars),
         chainid: u64(spec.chainid),
         category: spec.category,

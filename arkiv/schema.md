@@ -1,6 +1,6 @@
 # NeverDown — Arkiv capability offer schema (C5)
 
-Schema name: `neverdown.capabilityoffer`
+Schema name: `neverdown.capabilityofferv2` (reseed after upgrading; old offers are ignored)
 
 Wallet-owned, expiring **offers** the resilience agent discovers when a failure spot needs replacement capacity. Hackathon demo category: `rpc` (not the product ceiling).
 
@@ -10,6 +10,10 @@ Wallet-owned, expiring **offers** the resilience agent discovers when a failure 
 |---|---|---|---|
 | `sellerens` | str | yes | Seller ENS name (resolved in C6) |
 | `serviceurl` | str | no | Endpoint the buyer will call after pay |
+| `schemaversion` | u64 | no | Must be `2` |
+| `probeurl` | str | no | Bounded public capability probe |
+| `purchaseurl` | str | no | x402 purchase endpoint for a bounded entitlement |
+| `rpcurl` | str | no | Authenticated JSON-RPC endpoint used by the gateway |
 | `pricetinybars` | u64 | yes | Exact x402 price in tinybars |
 | `chainid` | u64 | yes | Target app chain (e.g. Sepolia `11155111`) |
 | `category` | str | yes | Capability class (`rpc`, later indexer / price / …) |

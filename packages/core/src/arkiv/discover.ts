@@ -28,6 +28,10 @@ export function filterOffers(
   opts: { category: string; maxPriceTinybars: bigint; allowedPayTo?: string[] },
 ): CapabilityOfferRow[] {
   return offers.filter((o) => {
+    if (o.schemaversion !== 2n) return false;
+    const expiry = Date.parse(o.expiresat);
+    if (!Number.isFinite(expiry) || expiry <= Date.now()) return false;
+    if (!o.probeurl || !o.purchaseurl || !o.rpcurl || !o.sellerens || !o.payto || o.pricetinybars <= 0n) return false;
     if (o.category !== opts.category) return false;
     if (o.pricetinybars > opts.maxPriceTinybars) return false;
     if (opts.allowedPayTo && opts.allowedPayTo.length > 0 && !opts.allowedPayTo.includes(o.payto)) {
@@ -52,6 +56,10 @@ export async function discoverOffers(input: DiscoverOffersInput): Promise<Capabi
       $expiresAt: true,
       sellerens: true,
       serviceurl: true,
+      schemaversion: true,
+      probeurl: true,
+      purchaseurl: true,
+      rpcurl: true,
       pricetinybars: true,
       chainid: true,
       category: true,
@@ -66,6 +74,10 @@ export async function discoverOffers(input: DiscoverOffersInput): Promise<Capabi
     entityKey: row.$key,
     sellerens: row.sellerens.value,
     serviceurl: row.serviceurl.value,
+    schemaversion: row.schemaversion.value,
+    probeurl: row.probeurl.value,
+    purchaseurl: row.purchaseurl.value,
+    rpcurl: row.rpcurl.value,
     pricetinybars: row.pricetinybars.value,
     chainid: row.chainid.value,
     category: row.category.value,
