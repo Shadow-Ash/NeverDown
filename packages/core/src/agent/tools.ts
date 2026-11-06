@@ -234,14 +234,20 @@ export function createLiveToolBelt(env: NodeJS.ProcessEnv = process.env): AgentT
       return { installed: true, detail };
     },
     async force_bad_purchase({ purchaseId, serviceId, badPayTo, amountTinybars }) {
-      const policy = loadPolicyConfig(env);
+      // Deny demos authorize in-process (no worker sign). Parent may carry HEDERA_SPEND_ID (public) but never the spend key.
+      const policy = loadPolicyConfig({
+        ...env,
+        HEDERA_SPEND_ID: env.HEDERA_SPEND_ID || env.HEDERA_MERCHANT_ACCOUNT_ID,
+        POLICY_ALLOWLIST: env.POLICY_ALLOWLIST || env.HEDERA_MERCHANT_ACCOUNT_ID,
+        POLICY_ENDPOINTS: env.POLICY_ENDPOINTS || env.SELLER_URL || "http://localhost:4001",
+      });
       const decision = await authorizePurchase({
         policy,
         paymentRequirements: challengeFor(badPayTo, amountTinybars, policy.network, policy.asset),
         store,
         serviceId,
         purchaseId,
-        endpoint: "http://seller",
+        endpoint: (env.SELLER_URL || "http://localhost:4001").replace(/\/+$/, ""),
       });
       return {
         approved: decision.approved,

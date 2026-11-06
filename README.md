@@ -248,10 +248,24 @@ Fill `.env` before C1/C2 (Hedera, facilitator, later Arkiv/ENS). **Never commit 
 | C6 ENSv2 allowlist | **Code done** (hermetic tests) |
 | C7 Proof-of-Capability | **Done** — `pnpm poc:smoke` ([docs/C7-POC.md](docs/C7-POC.md)) |
 | C8 Supreme Agent | **Done** — `pnpm agent:demo --scenario procure\|deny` ([docs/C8-AGENT.md](docs/C8-AGENT.md)) |
-| C9 Console UI | **Code landed** — five-act demo and read-only incident evidence API; live acceptance pending |
-| Backend hardening | **Hermetic tests passing**; live v2 Arkiv offer, ENS records, independent PoC, and testnet purchase still need acceptance |
-| C10 | Not started |
+| C9 Console UI | **Done** — five-act console (`pnpm web:dev`) + evidence API |
+| Live acceptance | **Passed** — see [docs/LIVE-EVIDENCE.md](docs/LIVE-EVIDENCE.md) |
+| C10 Judge pack | **Baseline ready** — Arkiv md + demo/video checklists; tag `v0.1.0-demo` |
 | Git remote | `https://github.com/dhanushonchain/NeverDown.git` |
 | Maintainer | [ujjwaldubey1](https://github.com/ujjwaldubey1) |
+
+### Live Hedera settlement (acceptance)
+
+| Field | Value |
+|---|---|
+| Transaction ID | `0.0.9185802@1793985063.486076384` |
+| HashScan | https://hashscan.io/testnet/transaction/0.0.9185802%401793985063.486076384 |
+| Arkiv entity | `0x74867aaf0276debc7b151f1a40e6c1cd4e06d14018539f01112a17738a63310d` |
+| ENS | `neverdown.eth` |
+| Deny | `RECIPIENT_NOT_ALLOWLISTED` (no settle) |
+
+Setup for live rails: [docs/LIVE-BACKEND-ACCEPTANCE.md](docs/LIVE-BACKEND-ACCEPTANCE.md) · `pnpm env:bootstrap` · `pnpm preflight:live` · `pnpm agent:live`.
+
+**Security honesty:** C3 payment worker isolation is **PARTIAL** (same-OS-user file access). See [docs/C3-SECURITY-GATE.md](docs/C3-SECURITY-GATE.md).
 
 Built for **ETHGlobal Mumbai 2026**.

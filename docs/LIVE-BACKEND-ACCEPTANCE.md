@@ -44,4 +44,11 @@ The C3 security gate remains **PARTIAL**: worker secrets and SQLite files are re
 
 ## Current local acceptance state (2026-11-06)
 
-Ignored `.env.agent`, `.env.seller`, and `.env.worker` profiles have been prepared with file mode `0600`. A separate gateway instance reached `/ready` with two Sepolia providers and served `eth_chainId = 0xaa36a7`; a separate seller instance served the same chain ID through `/probe`. The agent preflight still stops because `SELLER_ENS_NAME` is unset. The ENS name in the prior allowlist has a resolver on Ethereum mainnet but lacks both `hederaAccount` and `x402Url` records. Arkiv query returned no live v2 offer. No new Hedera transaction or HCS acceptance evidence was produced by this work. Public RPC URLs used for the local smoke are development dependencies and should be replaced with controlled providers for a production deployment.
+Ignored `.env.agent`, `.env.seller`, `.env.worker`, and `.env.arkiv-seed` profiles are generated via `pnpm env:bootstrap`. Seller `/probe` and gateway `/ready` both answer Sepolia (`0xaa36a7`). `pnpm ens:check`, `pnpm arkiv:query` (v2 offer for `neverdown.eth`), and `pnpm preflight:live` passed. `pnpm agent:live` settled on Hedera testnet:
+
+- Tx: `0.0.9185802@1793985063.486076384`
+- HashScan: https://hashscan.io/testnet/transaction/0.0.9185802%401793985063.486076384
+- Arkiv entity: `0x74867aaf0276debc7b151f1a40e6c1cd4e06d14018539f01112a17738a63310d`
+- Deny: `pnpm agent:deny-live` → `RECIPIENT_NOT_ALLOWLISTED` (no settle)
+
+ENS mainnet name `neverdown.eth` resolves; missing on-chain text records are filled for local rehearsal via `ENS_ALLOW_TEXT_OVERLAY` (see [ENS-SETUP.md](./ENS-SETUP.md)). Publish real `hederaAccount` / `x402Url` texts before treating ENS as prize-complete. Full ID table: [LIVE-EVIDENCE.md](./LIVE-EVIDENCE.md).

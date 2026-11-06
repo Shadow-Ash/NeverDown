@@ -120,7 +120,7 @@ html[data-theme="dark"] { --bg:#2a2529; --surface:#242023; --card:#f3f0e7; --car
     <div class="card" id="procure" hidden>
       <span class="section-tag">03 / Procurement</span>
       <h2>Act 3 — Procure Scenario</h2>
-      <p class="muted">Runs the hermetic agent and installs a standby in-process. Safe for hackathon and no spend.</p>
+      <p class="muted">Default: hermetic (no spend). Set <code>AGENT_LIVE=true</code> in the web env to call <code>pnpm agent:live</code>.</p>
       <button class="primary" id="procureButton" onclick="runScenario('procure')">Run procurement</button>
       <pre id="procureOutput" aria-live="polite">Waiting for a scenario.</pre>
     </div>
@@ -135,7 +135,9 @@ html[data-theme="dark"] { --bg:#2a2529; --surface:#242023; --card:#f3f0e7; --car
       <span class="section-tag">05 / Audit</span>
       <h2>Act 5 — Evidence Timeline</h2>
       <div id="timeline" aria-live="polite"><div class="step">Checking gateway status…</div></div>
-      <p class="muted">Gateway snapshots and agent outputs are shown below. Connect HCS, Arkiv, and payment records as backend integrations are available.</p>
+      <div id="proofLinks" class="muted" style="margin-top:16px"></div>
+      <p class="muted">Gateway snapshots, agent receipts, HashScan, Arkiv entity, and ENS name for judges.</p>
+      <button class="primary" type="button" onclick="loadEvidence()">Refresh proof links</button>
     </div>
     <nav class="flow-controls" aria-label="Card navigation">
       <button id="previousCard" type="button" disabled>Previous</button>
@@ -270,6 +272,50 @@ function runDeny() {
   runScenario('deny');
 }
 
+async function loadEvidence() {
+  const box = document.getElementById('proofLinks');
+  if (hostedPreview) {
+    box.innerHTML = 'Proof links are available when running the local console against a live backend.';
+    return;
+  }
+  try {
+    const res = await fetch('/api/evidence');
+    const data = await res.json();
+    box.replaceChildren();
+    const lines = [
+      ['ENS', data.ens],
+      ['Arkiv entity', data.arkivEntityKey],
+      ['Hedera tx', data.transactionId],
+      ['HashScan', data.hashscanUrl],
+      ['HCS topic', data.topicId || '(set HEDERA_TOPIC_ID in worker/agent env)'],
+    ];
+    for (const [label, value] of lines) {
+      const row = document.createElement('div');
+      row.className = 'step pass';
+      const strong = document.createElement('strong');
+      strong.textContent = label;
+      row.append(strong);
+      if (String(value).startsWith('http')) {
+        const link = document.createElement('a');
+        link.href = value;
+        link.target = '_blank';
+        link.rel = 'noreferrer';
+        link.textContent = value;
+        link.style.display = 'block';
+        link.style.color = 'inherit';
+        row.append(link);
+      } else {
+        const detail = document.createElement('div');
+        detail.textContent = value;
+        row.append(detail);
+      }
+      box.append(row);
+    }
+  } catch (e) {
+    box.textContent = 'Unable to load evidence: ' + e;
+  }
+}
+
 const themeToggleButton = document.getElementById('themeToggle');
 const themeCurtain = document.getElementById('themeCurtain');
 let themeChanging = false;
@@ -302,6 +348,7 @@ themeToggleButton.addEventListener('click', () => {
   }, 550);
 });
 refreshStatus();
+loadEvidence();
 </script>
 </body>
 </html>

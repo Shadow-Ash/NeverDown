@@ -20,7 +20,7 @@ You are working on **NeverDown** (ETHGlobal Mumbai). Full handoff: **[docs/AGENT
 
 | Done | Next |
 |---|---|
-| C0–C8 (C5 Arkiv live needs `ARKIV_*`) | **C9 Console UI** → C10 judge pack |
+| C0–C9 + live settle evidence | Publish on-chain ENS texts · record ≤5 min video · push/tag as needed |
 
 ## Where to look
 

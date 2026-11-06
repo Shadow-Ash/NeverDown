@@ -24,7 +24,7 @@ Wallet-owned, expiring **offers** the resilience agent discovers when a failure 
 
 - **Owner:** the Arkiv writer wallet (`ARKIV_PRIVATE_KEY` address).
 - **Protocol expiry:** set via `ExpirationTime` on create; after `$expiresAt`, queries omit the entity.
-- **Seed set:** good-A, good-B (7 days), expired-C (≈4 seconds then dropped).
+- **Live seed:** one v2 offer from `pnpm arkiv:seed` using `SELLER_ENS_NAME` + `SELLER_URL` (see `.env.arkiv-seed`).
 
 ## Queries that matter
 

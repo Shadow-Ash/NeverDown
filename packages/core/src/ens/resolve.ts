@@ -44,6 +44,19 @@ export function createEnsProvider(rpcUrl: string): JsonRpcProvider {
   return new JsonRpcProvider(rpcUrl);
 }
 
+function applyOptionalTextOverlay(records: EnsTextRecords, env: NodeJS.ProcessEnv = process.env): EnsTextRecords {
+  // Local rehearsal only: fill missing on-chain texts when explicitly enabled.
+  // Judges / submission runs should set real ENS texts and leave ENS_ALLOW_TEXT_OVERLAY unset.
+  if (env.ENS_ALLOW_TEXT_OVERLAY?.trim() !== "true") return records;
+  return {
+    ...records,
+    hederaAccount: records.hederaAccount || env.ENS_TEXT_hederaAccount?.trim() || undefined,
+    x402Url: records.x402Url || env.ENS_TEXT_x402Url?.trim() || undefined,
+    arkivOwner: records.arkivOwner || env.ENS_TEXT_arkivOwner?.trim() || undefined,
+    category: records.category || env.ENS_TEXT_category?.trim() || undefined,
+  };
+}
+
 export async function resolveEnsSeller(name: string, rpcUrlOrProvider: string | JsonRpcProvider): Promise<EnsSellerResolution> {
   const provider = typeof rpcUrlOrProvider === "string" ? new JsonRpcProvider(rpcUrlOrProvider) : rpcUrlOrProvider;
 
@@ -74,7 +87,7 @@ export async function resolveEnsSeller(name: string, rpcUrlOrProvider: string | 
     ensName: name,
     normalizedEnsName: normalized,
     address,
-    records,
+    records: applyOptionalTextOverlay(records),
     resolverAddress: null,
   };
 }

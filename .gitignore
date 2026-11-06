@@ -13,6 +13,8 @@ coverage/
 .env.worker
 .env.agent
 .env.seller
+.env.arkiv-seed
+ENS_OWNER_PRIVATE_KEY
 *.sqlite*
 *.db
 *.db-wal

@@ -53,9 +53,9 @@ Failure spot unhealthy
 | C5 | **Code done** (live needs `ARKIV_*`) | `packages/core/src/arkiv` — `pnpm arkiv:seed` / `arkiv:query` |
 | C6 | **Code done** (hermetic) | `packages/core/src/ens` — resolve allowlist, fail closed |
 | C7 | **Done** | `packages/core/src/poc` — `pnpm poc:smoke` |
-| C8 | **Done** | `packages/core/src/agent` — `pnpm agent:demo` |
-| **C9** | **Next** | Console UI (five-act demo) |
-| C10 | Not started | Judge packaging |
+| C8 | **Done** | `packages/core/src/agent` — `pnpm agent:demo` / `agent:live` |
+| C9 | **Done** | `apps/web` — `pnpm web:dev` five-act console |
+| C10 | **Baseline** | Evidence + Arkiv judge md + demo/video checklists |
 
 ---
 
@@ -69,12 +69,11 @@ Failure spot unhealthy
 
 ---
 
-## Next phase: C9 (when implementing)
+## Next phase: ship polish
 
-- Next.js console: five acts, inject outage, procure, deny, evidence links
-- Do **not** start C10 until C9 gate is green
-
-Details: [BUILD-CHUNKS.md](./BUILD-CHUNKS.md) § C9.
+- Publish real ENS text records on `neverdown.eth` (disable `ENS_ALLOW_TEXT_OVERLAY`) — [ENS-SETUP.md](./ENS-SETUP.md)
+- Record ≤5 min video from [DEMO-SCRIPT.md](./DEMO-SCRIPT.md) / [VIDEO-CHECKLIST.md](./VIDEO-CHECKLIST.md)
+- Keep live evidence current: [LIVE-EVIDENCE.md](./LIVE-EVIDENCE.md)
 
 ---
 

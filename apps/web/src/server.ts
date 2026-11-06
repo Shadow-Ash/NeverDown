@@ -59,10 +59,26 @@ async function handleApi(req: IncomingMessage, res: ServerResponse, pathname: st
     return;
   }
 
+  if (pathname === "/api/evidence" && req.method === "GET") {
+    send(res, 200, {
+      ens: process.env.SELLER_ENS_NAME || "neverdown.eth",
+      arkivEntityKey: process.env.DEMO_ARKIV_ENTITY_KEY || "0x74867aaf0276debc7b151f1a40e6c1cd4e06d14018539f01112a17738a63310d",
+      transactionId: process.env.DEMO_HEDERA_TX_ID || "0.0.9185802@1793985063.486076384",
+      hashscanUrl: process.env.DEMO_HASHSCAN_URL || "https://hashscan.io/testnet/transaction/0.0.9185802%401793985063.486076384",
+      topicId: process.env.HEDERA_TOPIC_ID || "",
+      note: "Live IDs from docs/LIVE-EVIDENCE.md — refresh after each settle",
+    });
+    return;
+  }
+
   if (pathname === "/api/run-agent" && req.method === "POST") {
     const body = await readBody(req);
     const scenario = body.scenario === "deny" ? "deny" : "procure";
-    const pnpm = spawn("pnpm", ["agent:demo", "--scenario", scenario], {
+    const live = process.env.AGENT_LIVE === "true" || body.live === true;
+    const script = live
+      ? (scenario === "deny" ? ["agent:deny-live"] : ["agent:live"])
+      : ["agent:demo", "--scenario", scenario];
+    const pnpm = spawn("pnpm", script, {
       cwd: ROOT,
       env: process.env,
       stdio: ["ignore", "pipe", "pipe"],
@@ -78,7 +94,7 @@ async function handleApi(req: IncomingMessage, res: ServerResponse, pathname: st
       if (start >= 0 && end > start) {
         try { parsed = JSON.parse(out.slice(start, end + 1)); } catch { parsed = null; }
       }
-      send(res, code === 0 ? 200 : 500, { scenario, mode: "hermetic", exitCode: code, receipt: parsed, output: out });
+      send(res, code === 0 ? 200 : 500, { scenario, mode: live ? "live" : "hermetic", exitCode: code, receipt: parsed, output: out });
     });
     return;
   }
