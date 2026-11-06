@@ -2,6 +2,7 @@ import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 import type { HcsEvent } from "./types.js";
 
 export function canonicalize(value: unknown): string {
+  if (typeof value === "bigint") return JSON.stringify(value.toString());
   if (value === null || typeof value !== "object") return JSON.stringify(value);
   if (Array.isArray(value)) return `[${value.map(canonicalize).join(",")}]`;
   const keys = Object.keys(value as Record<string, unknown>).sort();

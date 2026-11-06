@@ -7,12 +7,8 @@
  *
  * Run: `pnpm pay:once`
  */
-import {
-  BuyerConfigError,
-  PayOnceError,
-  loadBuyerConfig,
-  payForRpcOnceWithConfig,
-} from "../packages/core/src/x402/index.js";
+import { BuyerConfigError, loadBuyerConfig } from "../packages/core/src/x402/config.js";
+import { PayOnceError, payForRpcOnceWithConfig } from "../packages/core/src/x402/payOnce.js";
 
 async function main(): Promise<void> {
   let config;

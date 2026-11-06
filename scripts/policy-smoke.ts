@@ -1,4 +1,6 @@
-import { loadPolicyConfig, openBudgetStore, authorizePurchase } from "../packages/core/src/index.js";
+import { loadPolicyConfig } from "../packages/core/src/policy/config.js";
+import { openBudgetStore } from "../packages/core/src/policy/budgetStore.js";
+import { authorizePurchase } from "../packages/core/src/policy/engine.js";
 
 async function main() {
   const policy = loadPolicyConfig(process.env);

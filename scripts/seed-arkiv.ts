@@ -7,12 +7,9 @@
  *
  * Run: pnpm arkiv:seed
  */
-import {
-  ArkivConfigError,
-  createArkivWalletClient,
-  loadArkivWriteConfig,
-  seedCapabilityOffers,
-} from "../packages/core/src/arkiv/index.js";
+import { ArkivConfigError, loadArkivWriteConfig } from "../packages/core/src/arkiv/config.js";
+import { createArkivWalletClient } from "../packages/core/src/arkiv/client.js";
+import { seedCapabilityOffers } from "../packages/core/src/arkiv/seed.js";
 
 async function main(): Promise<void> {
   let config;
