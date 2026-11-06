@@ -5,7 +5,8 @@ import { randomBytes } from "node:crypto";
 import { createServer } from "node:http";
 import { mkdtempSync, writeFileSync, rmSync, chmodSync } from "node:fs";
 import { join } from "node:path";
-import { tmpdir } from "node:os";
+import { platform, tmpdir } from "node:os";
+import { fileURLToPath } from "node:url";
 
 let serverPort = 0;
 const siteRoot = () => `http://127.0.0.1:${serverPort}`;
@@ -46,9 +47,17 @@ after(() => { server?.close?.(); });
 
 async function spawnWorker(envFile: string) {
   const token = randomBytes(32).toString("hex");
-  const child = spawn("node", ["--import", "tsx", "src/payment-worker/worker.ts"], {
-    cwd: new URL("..", import.meta.url).pathname.replace(/^file:\/\//, ""),
-    env: { NODE_ENV: "test", PATH: process.env.PATH, NEVERDOWN_PAYMENT_WORKER: "1", PAYMENT_WORKER_ENV_FILE: envFile },
+  const child = spawn(process.execPath, ["--import", "tsx", "src/payment-worker/worker.ts"], {
+    cwd: fileURLToPath(new URL("..", import.meta.url)),
+    env: {
+      ...process.env,
+      NODE_ENV: "test",
+      NEVERDOWN_PAYMENT_WORKER: "1",
+      PAYMENT_WORKER_ENV_FILE: envFile,
+      // Parent must not carry spend secrets into the worker process env.
+      HEDERA_SPEND_KEY: "",
+      HEDERA_OPERATOR_KEY: "",
+    },
     stdio: ["ignore", "pipe", "pipe", "ipc"],
   });
   child.on("message", () => {});
@@ -80,6 +89,11 @@ function envContent(portStr: string, dbPath: string) {
 
 describe("payment worker IPC", () => {
   it("rejects a worker whose credential file is group/world readable", async () => {
+    if (platform() === "win32") {
+      // NTFS does not expose reliable POSIX 0600 bits; mode check is unix-only in worker.ts.
+      assert.ok(true);
+      return;
+    }
     const dir = mkdtempSync(join(tmpdir(), "nd-ipc-"));
     const envFile = join(dir, ".env.worker");
     const db = join(dir, "policy.sqlite");
@@ -114,8 +128,8 @@ describe("payment worker IPC", () => {
       assert.equal(outcome.status, "SETTLED");
     } finally {
       try { child.kill(); } catch {}
-      void envFile;
-      rmSync(dir, { recursive: true, force: true });
+      await new Promise((r) => setTimeout(r, 300));
+      try { rmSync(dir, { recursive: true, force: true }); } catch { /* Windows may hold sqlite lock briefly */ }
     }
   });
 
@@ -146,8 +160,8 @@ describe("payment worker IPC", () => {
       assert.ok(second.type === "result" && second.outcome?.status === "DENIED", "replayed should be denied");
     } finally {
       try { child.kill(); } catch {}
-      void envFile;
-      rmSync(dir, { recursive: true, force: true });
+      await new Promise((r) => setTimeout(r, 300));
+      try { rmSync(dir, { recursive: true, force: true }); } catch { /* Windows may hold sqlite lock briefly */ }
     }
   });
 

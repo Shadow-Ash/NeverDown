@@ -28,8 +28,9 @@ You are working on **NeverDown** (ETHGlobal Mumbai). Full handoff: **[docs/AGENT
 |---|---|
 | Chunk gates | [docs/BUILD-CHUNKS.md](docs/BUILD-CHUNKS.md) |
 | Architecture | [docs/neverdown-architecture.md](docs/neverdown-architecture.md) |
+| C3 security gate / known gaps | [docs/C3-SECURITY-GATE.md](docs/C3-SECURITY-GATE.md) |
 | Buyer | `packages/core/src/x402/` · `pnpm pay:once` |
-| Policy / HCS | `packages/core/src/policy/` · `packages/core/src/hcs/` |
+| Policy / HCS / payment worker | `packages/core/src/policy/` · `hcs/` · `payment-worker/` |
 | Arkiv | `packages/core/src/arkiv/` · `pnpm arkiv:seed` / `arkiv:query` |
 | Gateway (RPC demo adapter) | `apps/gateway/` |
 | Seller (RPC demo merchant) | `apps/sellers/` |

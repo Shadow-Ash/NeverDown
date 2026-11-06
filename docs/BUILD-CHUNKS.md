@@ -18,7 +18,7 @@ Do **not** start UI (C9) before rails (C1–C7) and agent (C8) work.
 | C0 | Monorepo scaffold | **Done** | `pnpm install` |
 | C1 | x402 seller (402 only) | **Done + tested** | unpaid `POST /rpc` → HTTP 402 |
 | C2 | Hedera pay roundtrip | **Done + live HashScan settle** | `pnpm pay:once` → HashScan tx id |
-| C3 | PolicyEngine + HCS | **Code done + tested** | Deny + PAY logged |
+| C3 | PolicyEngine + HCS | **Code done + tested** (security **PARTIAL** — [C3-SECURITY-GATE.md](./C3-SECURITY-GATE.md)) | Deny + PAY logged; worker IPC |
 | C4 | Gateway fast plane | **Code landed** (merged) | Failover without AI |
 | C5 | Arkiv offers | **Code done** (live needs `ARKIV_*`) | Live query returns offers |
 | C6 | ENSv2 resolve identity | **Code done** (hermetic tests) | Off-allowlist fail-closed |

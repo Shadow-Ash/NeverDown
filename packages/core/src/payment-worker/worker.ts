@@ -1,5 +1,6 @@
 import { runPurchase } from "./purchase.js";
 import { readFileSync, statSync } from "node:fs";
+import { platform } from "node:os";
 import { buildPurchaseDeps, loadCredentials } from "./purchase.js";
 import { parseWorkerRequestMessage, parseHelloMessage, PaymentWorkerError, isRecord } from "./protocol.js";
 
@@ -82,10 +83,13 @@ export function startWorker() {
       }
     } catch {}
     try {
+      // POSIX mode bits are not meaningful on Windows NTFS the same way; enforce 0600 on unix only.
+      if (platform() !== "win32") {
         const st = statSync(envFile);
-      if ((st.mode & 0o077) !== 0) {
-        if (process.send) process.send({ type: "error", requestId: "?", code: "UNSAFE_ENV_FILE", message: "worker credential file must be mode 0600" });
-        process.exit(1);
+        if ((st.mode & 0o077) !== 0) {
+          if (process.send) process.send({ type: "error", requestId: "?", code: "UNSAFE_ENV_FILE", message: "worker credential file must be mode 0600" });
+          process.exit(1);
+        }
       }
     } catch {}
   }

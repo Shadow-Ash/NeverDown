@@ -15,7 +15,13 @@ async function main() {
   const good = await authorizePurchase({ policy, paymentRequirements: challenge as never, store, serviceId: policy.allowedServiceIds[0], purchaseId: "smoke-good" });
   console.log("good authorization:", good.approved ? "AUTHORIZED" : "DENIED " + (good as never).denyReason);
 
-  const bad = await authorizePurchase({ policy, paymentRequirements: challenge, store, serviceId: policy.allowedServiceIds[0], purchaseId: "smoke-bad", /* force mismatch via alternate challenge */ });
+  const bad = await authorizePurchase({
+    policy,
+    paymentRequirements: challenge,
+    store,
+    serviceId: policy.allowedServiceIds[0],
+    purchaseId: "smoke-good", // same id → expect DUPLICATE_PURCHASE_ID
+  });
   console.log("second purchase (duplicate ID):", bad.approved ? "AUTHORIZED" : "DENIED " + (bad as never).denyReason);
 
   const denied = await authorizePurchase({

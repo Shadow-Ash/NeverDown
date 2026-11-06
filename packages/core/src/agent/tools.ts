@@ -12,7 +12,7 @@ function challengeFor(payTo: string, amountTinybars: string, network = "hedera:t
   return {
     x402Version: 2,
     error: "Payment required",
-    resource: { url: "http://seller/rpc", description: "agent", mimeType: "application/json" },
+    resource: { url: "http://localhost:4001/rpc", description: "agent", mimeType: "application/json" },
     accepts: [
       {
         scheme: "exact",
@@ -111,6 +111,7 @@ export function createHermeticToolBelt(opts?: {
         HEDERA_SPEND_ID: "0.0.1111",
         HEDERA_MERCHANT_ACCOUNT_ID: "0.0.11326899",
         POLICY_ALLOWLIST: "0.0.11326899",
+        POLICY_ENDPOINTS: "http://localhost:4001",
         POLICY_CAP_TINYBARS: "30000",
         POLICY_TOTAL_BUDGET_TINYBARS: "30000",
         POLICY_SERVICES: serviceId,
@@ -139,6 +140,7 @@ export function createHermeticToolBelt(opts?: {
         HEDERA_SPEND_ID: "0.0.1111",
         HEDERA_MERCHANT_ACCOUNT_ID: "0.0.11326899",
         POLICY_ALLOWLIST: "0.0.11326899",
+        POLICY_ENDPOINTS: "http://localhost:4001",
         POLICY_CAP_TINYBARS: "30000",
         POLICY_TOTAL_BUDGET_TINYBARS: "30000",
         POLICY_SERVICES: serviceId,

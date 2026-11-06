@@ -48,7 +48,7 @@ Failure spot unhealthy
 | C0 | **Done** | Monorepo scaffold |
 | C1 | **Done + tested** | `apps/sellers` — unpaid `/rpc` → 402 |
 | C2 | **Done + live HashScan** | `packages/core/src/x402` — `pnpm pay:once` |
-| C3 | **Done + tested** | `packages/core/src/policy`, `hcs` — `pnpm policy:smoke` |
+| C3 | **Done + tested** (security gate **PARTIAL**) | `packages/core/src/policy`, `hcs`, `payment-worker` — `pnpm policy:smoke` · see [C3-SECURITY-GATE.md](./C3-SECURITY-GATE.md) |
 | C4 | **Code + hermetic tests** | `apps/gateway` — failover without AI |
 | C5 | **Code done** (live needs `ARKIV_*`) | `packages/core/src/arkiv` — `pnpm arkiv:seed` / `arkiv:query` |
 | C6 | **Code done** (hermetic) | `packages/core/src/ens` — resolve allowlist, fail closed |
@@ -100,3 +100,4 @@ docs/             Architecture, chunks, per-chunk guides
 4. Keep RPC demos working while generalizing names/docs.
 5. Push only when the human asks.
 6. Older chat history that says “build an RPC autopay product” is **wrong** — follow this file + README.
+7. Before changing pay/policy/HCS/worker/C8 live purchase: read [C3-SECURITY-GATE.md](./C3-SECURITY-GATE.md) (BigInt hash fix, restricted barrel, PARTIAL isolation, C8 live gap).

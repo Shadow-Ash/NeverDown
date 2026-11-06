@@ -2,6 +2,8 @@
 
 Server-side **authorize-before-sign** policy with durable budget reservations and Hedera **HCS** audit events.
 
+**Security gate / known gaps:** [C3-SECURITY-GATE.md](./C3-SECURITY-GATE.md) (BigInt hash fix, payment worker IPC, PARTIAL isolation).
+
 ## Commands
 
 ```bash

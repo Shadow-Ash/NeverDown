@@ -4,6 +4,8 @@ Wires C3–C7 into one **tool-only** loop for Act 3 (procure) and Act 4 (deny). 
 
 No fancy UI yet (C9). Default mode is **hermetic** (deterministic tools, no LLM required). `--live` uses Arkiv/ENS/PoC/gateway when env is set.
 
+**C8 readiness vs C3 isolation:** [C3-SECURITY-GATE.md](./C3-SECURITY-GATE.md) — hermetic demos are fine; live `request_purchase` still authorizes in-process and does **not** yet settle only via the payment worker.
+
 ## Tools
 
 | Tool | Rails |
