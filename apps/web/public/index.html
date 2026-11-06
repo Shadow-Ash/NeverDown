@@ -9,8 +9,8 @@
     @font-face { font-family:"Redaction 50"; src:url("/fonts/Redaction50-Regular.woff2") format("woff2"); font-weight:400; font-style:normal; font-display:swap; }
     @font-face { font-family:"Redaction 50"; src:url("/fonts/Redaction50-Bold.woff2") format("woff2"); font-weight:700; font-style:normal; font-display:swap; }
     @font-face { font-family:"Redaction 50"; src:url("/fonts/Redaction50-Italic.woff2") format("woff2"); font-weight:400; font-style:italic; font-display:swap; }
-    :root { --bg:#f3f0e7; --surface:#f0ede4; --text:#1e1e1e; --muted:#5f5a54; --line:#d9d6cf; --panel:#2a2529; --panel-text:#f3f0e7; --panel-muted:#d8d0c8; --panel-line:#51484e; --action:#f3e3c5; --action-text:#292329; --success:#1f8a6a; }
-    html[data-theme="dark"] { --bg:#2a2529; --surface:#242023; --text:#f3f0e7; --muted:#b4aca5; --line:#51484e; --panel:#f3f0e7; --panel-text:#2a2529; --panel-muted:#514b48; --panel-line:#d8d0c6; --action:#2a2529; --action-text:#f3f0e7; --success:#45d19b; }
+    :root { --bg:#f3f0e7; --surface:#f0ede4; --text:#1e1e1e; --muted:#5f5a54; --line:#d9d6cf; --panel:#2a2529; --panel-text:#f3f0e7; --panel-muted:#d8d0c8; --panel-line:#51484e; --success:#1f8a6a; }
+    html[data-theme="dark"] { --bg:#2a2529; --surface:#242023; --text:#f3f0e7; --muted:#b4aca5; --line:#51484e; --panel:#f3f0e7; --panel-text:#2a2529; --panel-muted:#514b48; --panel-line:#d8d0c6; --success:#45d19b; }
     * { box-sizing:border-box; }
     html { scroll-behavior:smooth; }
     body { margin:0; background:var(--bg); color:var(--text); font:400 16px/1.5 "Redaction 50", Georgia, serif; }
@@ -39,7 +39,7 @@
     .theme-curtain.rising { transform-origin:bottom; transform:scaleY(0); transition:transform 550ms cubic-bezier(.76,0,.24,1); }
     .eyebrow { display:block; color:var(--muted); font-size:.76rem; font-weight:700; letter-spacing:.14em; text-transform:uppercase; }
     .hero { display:grid; grid-template-columns:minmax(0,1.2fr) minmax(350px,.8fr); gap:clamp(32px,6vw,90px); align-items:center; min-height:630px; padding-top:56px; padding-bottom:72px; }
-    .hero h1 { max-width:780px; margin:22px 0 24px; font-size:clamp(3rem,6.2vw,6rem); font-weight:700; letter-spacing:-.06em; line-height:.99; }
+    .hero h1 { max-width:780px; margin:0 0 24px; font-size:clamp(3rem,6.2vw,6rem); font-weight:700; letter-spacing:-.06em; line-height:.99; }
     .hero h1 em { font-style:italic; }
     .hero-copy { max-width:600px; margin:0; color:var(--muted); font-size:clamp(1.05rem,1.55vw,1.28rem); line-height:1.55; }
     .hero-actions { display:flex; flex-wrap:wrap; gap:12px; margin-top:32px; }
@@ -81,18 +81,13 @@
     .scope-row { display:flex; justify-content:space-between; gap:12px; align-items:center; padding:16px 18px; border:1px solid var(--line); border-radius:10px; }
     .scope-row strong { font-size:1.08rem; }
     .scope-row span { color:var(--muted); font-size:.85rem; white-space:nowrap; }
-    .proof-band { display:flex; justify-content:space-between; align-items:center; gap:28px; padding:34px; border-radius:18px; background:var(--panel); color:var(--panel-text); }
-    .proof-band .eyebrow { color:var(--panel-muted); }
-    .proof-band h2 { margin:8px 0 6px; font-size:clamp(1.6rem,2.5vw,2.2rem); line-height:1.15; }
-    .proof-band p { margin:0; color:var(--panel-muted); font-size:.94rem; }
-    .proof-band a { flex:none; display:inline-flex; min-height:44px; align-items:center; padding:9px 14px; border-radius:10px; background:var(--action); color:var(--action-text); text-decoration:none; font-weight:700; }
     .last-section { padding-bottom:100px; }
     .last-section .section-heading { max-width:900px; }
     .site-footer { display:flex; justify-content:space-between; gap:24px; padding-top:26px; padding-bottom:32px; border-top:1px solid var(--line); color:var(--muted); font-size:.9rem; }
     .site-footer p { margin:0; }
     .site-footer a:hover { color:var(--text); }
     @media (max-width:1000px) { .hero { grid-template-columns:1fr; min-height:0; gap:44px; } .operator-card { max-width:640px; } .process { grid-template-columns:repeat(2,minmax(0,1fr)); row-gap:32px; } .process article:nth-child(3) { padding-left:0; border-left:0; } }
-    @media (max-width:700px) { .shell { padding-left:16px; padding-right:16px; } .site-header { gap:14px; } .site-nav { display:none; } .header-actions { margin-left:auto; gap:8px; } .header-link { padding:8px 10px; } .brand span { display:none; } .hero { padding-top:44px; padding-bottom:68px; } .hero h1 { font-size:clamp(2.7rem,13vw,4.6rem); } .two-planes, .scope { grid-template-columns:1fr; } .section { padding:64px 0; } .process { grid-template-columns:1fr; row-gap:0; } .process article, .process article + article, .process article:nth-child(3) { padding:18px 0; border-left:0; border-top:1px solid var(--line); } .process { border-top:0; } .process h3 { margin:12px 0 8px; } .proof-band { display:block; padding:24px; } .proof-band a { margin-top:20px; } .site-footer { display:block; } .site-footer p + p { margin-top:10px; } }
+    @media (max-width:700px) { .shell { padding-left:16px; padding-right:16px; } .site-header { gap:14px; } .site-nav { display:none; } .header-actions { margin-left:auto; gap:8px; } .header-link { padding:8px 10px; } .brand span { display:none; } .hero { padding-top:44px; padding-bottom:68px; } .hero h1 { font-size:clamp(2.7rem,13vw,4.6rem); } .two-planes, .scope { grid-template-columns:1fr; } .section { padding:64px 0; } .process { grid-template-columns:1fr; row-gap:0; } .process article, .process article + article, .process article:nth-child(3) { padding:18px 0; border-left:0; border-top:1px solid var(--line); } .process { border-top:0; } .process h3 { margin:12px 0 8px; } .site-footer { display:block; } .site-footer p + p { margin-top:10px; } }
     @media (prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } .theme-curtain.falling, .theme-curtain.rising { transition:none; } }
   </style>
 </head>
@@ -107,7 +102,6 @@
   <nav class="site-nav" aria-label="Main navigation">
     <a href="#how-it-works">How it works</a>
     <a href="#failure-spots">Failure spots</a>
-    <a href="#proof">Proof</a>
   </nav>
   <div class="header-actions">
     <a class="header-link" href="/console.html">Open console ↗</a>
@@ -120,14 +114,12 @@
 <main>
   <section class="hero shell" aria-labelledby="hero-title">
     <div>
-      <span class="eyebrow">Programmable resilience for Web3</span>
       <h1 id="hero-title">When a service fails, <em>your app</em> keeps going.</h1>
       <p class="hero-copy">Define what NeverDown may do before a dependency breaks. It switches to an approved standby first, then finds and verifies replacement capacity under your policy.</p>
       <div class="hero-actions">
         <a class="button button-primary" href="/console.html">Explore the console ↗</a>
         <a class="button button-secondary" href="#how-it-works">See how it works ↓</a>
       </div>
-      <p class="hero-note">RPC is the first demo adapter. The product is built for any registered failure spot.</p>
     </div>
     <div class="operator-card" aria-label="Example recovery sequence">
       <div class="operator-head">
@@ -156,7 +148,7 @@
   </section>
   <section class="section shell" id="how-it-works" aria-labelledby="planes-title">
     <span class="eyebrow">The operating model</span>
-    <h2 class="section-heading" id="planes-title">One policy. Two independent clocks.</h2>
+    <h2 class="section-heading" id="planes-title">One policy.<br>Two independent clocks.</h2>
     <div class="two-planes">
       <article class="plane">
         <span class="plane-index">01 / Fast recovery</span>
@@ -194,19 +186,9 @@
       <div class="scope-row"><strong>Price API</strong><span>Future adapter</span></div>
     </div>
   </section>
-  <section class="section shell" id="proof" aria-labelledby="proof-title">
-    <div class="proof-band">
-      <div>
-        <span class="eyebrow">Recorded testnet evidence</span>
-        <h2 id="proof-title">A purchase you can inspect.</h2>
-        <p>Hedera testnet transaction 0.0.9185802@1793985063.486076384. The live ENS text-record step is still pending.</p>
-      </div>
-      <a href="https://hashscan.io/testnet/transaction/0.0.9185802%401793985063.486076384" target="_blank" rel="noopener noreferrer">View on HashScan ↗</a>
-    </div>
-  </section>
   <section class="section last-section shell" aria-labelledby="cta-title">
     <span class="eyebrow">See it in action</span>
-    <h2 class="section-heading" id="cta-title">Walk through recovery, procurement, denial, and proof.</h2>
+    <h2 class="section-heading" id="cta-title">The policy that never let you down</h2>
     <a class="button button-primary" href="/console.html">Open the five-act console ↗</a>
     <p class="hero-note">The hosted console is a preview. Live operator actions run in the local backend.</p>
   </section>
