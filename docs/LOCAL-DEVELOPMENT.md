@@ -1,7 +1,7 @@
 # Local development
 
 ## Requirements
-- Node.js 20 or newer (Node 22 LTS recommended)
+- Node.js 22.5 or newer (Node 22 LTS recommended)
 - npm (included with Node.js)
 
 The repository supports npm workspaces and retains pnpm 9.15.0 as the canonical locked workspace manager.

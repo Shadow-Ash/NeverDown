@@ -192,7 +192,7 @@ neverdown/
 
 ## Quick start
 
-**Requirements:** Node.js 20+ (Node 22 LTS recommended).
+**Requirements:** Node.js 22.5+ (Node 22 LTS recommended).
 
 ```bash
 git clone https://github.com/dhanushonchain/NeverDown.git
