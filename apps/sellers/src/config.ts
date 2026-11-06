@@ -11,6 +11,7 @@ export interface SellerConfig {
   rpcUpstreamUrl: string | null;
   entitlementDbPath: string;
   databaseUrl: string | null;
+  trustProxy: boolean;
 }
 
 export class ConfigError extends Error {
@@ -110,5 +111,6 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): SellerConfig {
     rpcUpstreamUrl,
     entitlementDbPath: env.SELLER_ENTITLEMENT_DB_PATH?.trim() || "neverdown-seller.sqlite",
     databaseUrl,
+    trustProxy: Boolean(env.DYNO),
   };
 }

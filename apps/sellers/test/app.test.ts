@@ -72,6 +72,20 @@ describe("C1 x402 RPC seller", () => {
     assert.ok(res.headers.get("payment-required"), "PAYMENT-REQUIRED header must be present");
   });
 
+  it("quotes the public HTTPS resource URL behind a trusted Heroku proxy", async () => {
+    const proxy = await listen(createApp({ config: testConfig({ trustProxy: true }), facilitatorClient: fakeFacilitator() }));
+    try {
+      const res = await fetch(`${proxy.baseUrl}/rpc-pack`, {
+        method: "POST",
+        headers: { "content-type": "application/json", "x-forwarded-proto": "https" },
+        body: "{}",
+      });
+      assert.equal(res.status, 402);
+      const challenge = decodePaymentRequired(res.headers.get("payment-required")!) as { resource: { url: string } };
+      assert.equal(challenge.resource.url, proxy.baseUrl.replace("http:", "https:") + "/rpc-pack");
+    } finally { await proxy.close(); }
+  });
+
   it("serves only bounded public capability probes without payment", async () => {
     const app = createApp({ config: testConfig(), facilitatorClient: fakeFacilitator() });
     const probe = await listen(app);

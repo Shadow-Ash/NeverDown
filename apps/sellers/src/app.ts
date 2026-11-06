@@ -80,6 +80,8 @@ export function createApp(opts: AppOptions): express.Express {
 
   const app = express();
   app.disable("x-powered-by");
+  // Heroku terminates HTTPS at its router; x402 derives the resource URL from req.protocol.
+  if (config.trustProxy) app.set("trust proxy", 1);
   let probeWindowStart = Date.now();
   let probeCount = 0;
 
