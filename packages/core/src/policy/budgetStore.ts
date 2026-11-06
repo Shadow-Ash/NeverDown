@@ -14,6 +14,10 @@ export type ReservationRecord = {
   reason?: string;
 };
 
+export class LedgerError extends Error {
+  readonly code: string;
+  constructor(code: string, message: string) { super(message); this.name="LedgerError"; this.code=code; }
+}
 export class BudgetStore {
   private db: DatabaseSync;
 
@@ -152,6 +156,70 @@ export class BudgetStore {
   markOutboxFailed(id: string, message: string): void {
     this.db.prepare("UPDATE hcs_outbox SET status='pending',last_error=?,attempts=attempts+1,last_attempt_at=? WHERE id=?")
       .run(message, new Date().toISOString(), id);
+  }
+
+
+  ledgerError(code: string, message: string): never { throw new LedgerError(code,message); }
+
+  /** Atomically move a RESERVED purchase to SIGNING right before signing. */
+  consumeForSigning(purchaseId: string, policyId: string, sellerPayTo: string, amount: bigint, authorizationExpiresAt: string, now: string = new Date().toISOString()): void {
+    this.db.exec("BEGIN IMMEDIATE");
+    try {
+      const row = this.db.prepare("SELECT * FROM purchase_reservations WHERE purchase_id=?").get(purchaseId) as any;
+      if (!row) { this.db.exec("COMMIT"); throw new LedgerError("NO_RESERVATION", "no durable reservation for purchase"); }
+      if (row.state !== "RESERVED") { this.db.exec("COMMIT"); throw new LedgerError("NOT_RESERVED", `purchase is in state ${row.state}, not RESERVED`); }
+      if (String(row.policy_id) !== policyId) { this.db.exec("COMMIT"); throw new LedgerError("AUTHORIZATION_MISMATCH", "policy_id does not match reservation"); }
+      if (Date.parse(authorizationExpiresAt) <= Date.parse(now)) { this.db.exec("COMMIT"); throw new LedgerError("AUTHORIZATION_EXPIRED", "authorization expired"); }
+      const auth = this.db.prepare("SELECT record_json FROM authorization_records WHERE purchase_id=?").get(purchaseId) as { record_json: string } | undefined;
+      if (!auth) { this.db.exec("COMMIT"); throw new LedgerError("NO_AUTHORIZATION", "no durable authorization record"); }
+      let parsed: { sellerPayTo: string; amountTinybars: string | number; policyId: string };
+      try { parsed = JSON.parse(auth.record_json); } catch { this.db.exec("COMMIT"); throw new LedgerError("NO_AUTHORIZATION", "authorization is not parseable"); }
+      if (String(parsed.policyId) !== policyId) { this.db.exec("COMMIT"); throw new LedgerError("AUTHORIZATION_MISMATCH", "policy_id mismatch"); }
+      if (parsed.sellerPayTo !== sellerPayTo) { this.db.exec("COMMIT"); throw new LedgerError("AUTHORIZATION_MISMATCH", "payTo changed since authorization"); }
+      if (BigInt(parsed.amountTinybars) !== amount) { this.db.exec("COMMIT"); throw new LedgerError("AUTHORIZATION_MISMATCH", "amount changed since authorization"); }
+      const authExpires = (parsed as { expiresAt?: string }).expiresAt;
+      if (!authExpires || Date.parse(authExpires) <= Date.parse(now)) { this.db.exec("COMMIT"); throw new LedgerError("AUTHORIZATION_EXPIRED", "authorization expired or missing expiry"); }
+      this.db.prepare("UPDATE purchase_reservations SET state='SIGNING',reason=? WHERE purchase_id=? AND state='RESERVED'")
+        .run("claiming", purchaseId);
+      // check row changed
+      const cur = this.db.prepare("SELECT state FROM purchase_reservations WHERE purchase_id=?").get(purchaseId) as { state: string };
+      if (cur.state !== "SIGNING") { this.db.exec("ROLLBACK"); throw new LedgerError("NOT_RESERVED","concurrent claim rejected"); }
+      this.db.exec("COMMIT");
+    } catch (e) {
+      try { this.db.exec("ROLLBACK"); } catch {}
+      if (e instanceof LedgerError) throw e;
+      throw e;
+    }
+  }
+
+  /** Definitive pre-signing failure: release reservation to free budget. Only reserved purchases. */
+  releaseOnPreSigningFailure(purchaseId: string, reason: string): boolean {
+    const row = this.db.prepare("SELECT state FROM purchase_reservations WHERE purchase_id=?").get(purchaseId) as { state: string } | undefined;
+    if (!row || row.state !== "RESERVED") return false;
+    this.db.prepare("UPDATE purchase_reservations SET state='RELEASED',reason=? WHERE purchase_id=? AND state='RESERVED'").run(reason, purchaseId);
+    return true;
+  }
+
+  markSettled(purchaseId: string, transactionId: string): boolean {
+    const res = this.db.prepare("UPDATE purchase_reservations SET state='SETTLED',transaction_id=?,settled_at=? WHERE purchase_id=? AND state='SIGNING'")
+      .run(transactionId, new Date().toISOString(), purchaseId) as { changes: number };
+    return Number(res.changes||0) > 0;
+  }
+
+  markUncertain(purchaseId: string, reason: string): boolean {
+    const res = this.db.prepare("UPDATE purchase_reservations SET state='UNCERTAIN',reason=? WHERE purchase_id=? AND state='SIGNING'")
+      .run(reason, purchaseId) as { changes: number };
+    return Number(res.changes||0) > 0;
+  }
+
+  recoverAfterRestart(): { released: number; uncertain: number } {
+    let uncertain = 0;
+    try {
+      const res = this.db.prepare("UPDATE purchase_reservations SET state='UNCERTAIN',reason=? WHERE state='SIGNING'").run("worker crashed during signing") as { changes: number };
+      uncertain = Number(res.changes||0);
+    } catch {}
+    // RESERVED that may have been interrupted pre-signing get released? Keep conservative: leave RESERVED. They are still eligible.
+    return { released: 0, uncertain };
   }
 
   close(): void { this.db.close(); }

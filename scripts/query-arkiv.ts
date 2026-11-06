@@ -3,11 +3,9 @@
  *
  * Run: pnpm arkiv:query
  */
-import {
-  ArkivConfigError,
-  discoverOffers,
-  loadArkivReadConfig,
-} from "../packages/core/src/arkiv/index.js";
+import { ArkivConfigError } from "../packages/core/src/arkiv/config.js";
+import { discoverOffers } from "../packages/core/src/arkiv/discover.js";
+import { loadArkivReadConfig } from "../packages/core/src/arkiv/config.js";
 
 async function main(): Promise<void> {
   let config;

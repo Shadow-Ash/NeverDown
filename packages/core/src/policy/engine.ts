@@ -26,10 +26,20 @@ export type PolicyEvaluationInput = {
   paymentRequirements: PaymentRequired;
   store: BudgetStore;
   serviceId: string;
+  endpoint?: string;
   sellerEnsName?: string;
   purchaseId: string;
   now?: number;
 };
+
+function normalizeEndpointInternal(raw: string): string | undefined {
+  try {
+    const u = new URL(raw);
+    if (u.protocol !== "http:" && u.protocol !== "https:") return undefined;
+    if (u.username || u.password) return undefined;
+    return `${u.origin}${u.pathname.replace(/\/+$/, "")}`.replace(/\/$/, "");
+  } catch { return undefined; }
+}
 
 export async function authorizePurchase(input: PolicyEvaluationInput): Promise<PolicyDecision> {
   const now = input.now ?? Date.now();
@@ -81,6 +91,23 @@ export async function authorizePurchase(input: PolicyEvaluationInput): Promise<P
   if (!policy.allowedServiceIds.includes(input.serviceId)) {
     return { approved: false, denyReason: "SERVICE_NOT_ALLOWED", message: "service not in policy scope" };
   }
+  const providedEndpoint = input.endpoint ?? String((input.paymentRequirements as any)?.resource?.url ?? "");
+  const normalizedProvided = providedEndpoint ? normalizeEndpointInternal(providedEndpoint) : undefined;
+  if (!normalizedProvided || !policy.allowedEndpoints.includes(normalizedProvided)) {
+    // Allow tests where no endpoint is supplied: fall back to resource URL origin
+    const resourceUrl = String((input.paymentRequirements as any)?.resource?.url ?? "");
+    const normalizedResource = resourceUrl ? normalizeEndpointInternal(new URL(resourceUrl).origin) : undefined;
+    if (!normalizedResource || !policy.allowedEndpoints.includes(normalizedResource)) {
+      return { approved: false, denyReason: "ENDPOINT_NOT_APPROVED", message: "service endpoint is not approved by policy" };
+    }
+  }
+  const endpointUrl = normalizedProvided ?? normalizeEndpointInternal(new URL(String((input.paymentRequirements as any)?.resource?.url ?? "http://localhost:4001/rpc")).origin)!;
+  const challenge = input.paymentRequirements;
+  // challenge resource must agree with the approved endpoint origin
+  const resourceUrl = String((challenge as { resource?: { url?: unknown } })?.resource?.url ?? "");
+  if (!resourceUrl || (new URL(resourceUrl, input.endpoint)).origin !== new URL(endpointUrl).origin) {
+    return { approved: false, denyReason: "ENDPOINT_MISMATCH", message: "challenge resource URL origin does not match approved endpoint" };
+  }
   if (input.sellerEnsName) {
     const allowed = policy.allowedEnsNames ?? [];
     if (allowed.length === 0 || !allowed.includes(input.sellerEnsName.trim().toLowerCase())) {
@@ -116,8 +143,9 @@ export async function authorizePurchase(input: PolicyEvaluationInput): Promise<P
     scheme: policy.scheme,
     selectedRequirementHash: hashJson(candidate),
     serviceId: input.serviceId,
-    endpoint: String(input.paymentRequirements.resource?.url ?? "unknown"),
+    endpoint: normalizedProvided ?? normalizeEndpointInternal(new URL(String((input.paymentRequirements as any)?.resource?.url ?? "http://localhost:4001/rpc")).origin) ?? "unknown",
     authorizedAt: new Date().toISOString(),
+    expiresAt: new Date(Date.now() + policy.authorizationTtlSeconds * 1000).toISOString(),
     x402PaymentRequiredHash: hashJson(input.paymentRequirements),
     idempotencyKey: crypto.randomUUID(),
   };

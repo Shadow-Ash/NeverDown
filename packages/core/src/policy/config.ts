@@ -1,4 +1,5 @@
 import type { PolicyConfig } from "./types.js";
+import { normalizeEndpoint } from "./endpoint.js";
 
 export class PolicyConfigError extends Error {
   readonly envVar?: string;
@@ -64,6 +65,18 @@ export function loadPolicyConfig(env: NodeJS.ProcessEnv = process.env): PolicyCo
   const allowedServiceIds = serviceRaw.split(/[,\s]+/).map((x) => x.trim()).filter(Boolean);
   const allowedEnsNames = split(env, "ENS_ALLOWLIST_NAMES", []).map((x) => x.toLowerCase());
 
+  const allowedEndpoints = split(env, "POLICY_ENDPOINTS", [env.SELLER_URL?.trim() || "http://localhost:4001"]).map((raw) => {
+    const normalized = normalizeEndpoint(raw);
+    if (!normalized) throw new PolicyConfigError("POLICY_ENDPOINTS must contain http(s) base URLs without credentials", "POLICY_ENDPOINTS");
+    return normalized;
+  });
+
+  const ttlRaw = env.POLICY_AUTH_TTL_SECONDS?.trim() || "120";
+  const authorizationTtlSeconds = Number(ttlRaw);
+  if (!Number.isInteger(authorizationTtlSeconds) || authorizationTtlSeconds < 1 || authorizationTtlSeconds > 600) {
+    throw new PolicyConfigError("POLICY_AUTH_TTL_SECONDS must be an integer between 1 and 600", "POLICY_AUTH_TTL_SECONDS");
+  }
+
   const expiresAt = env.POLICY_EXPIRES_AT?.trim() || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
   if (Number.isNaN(Date.parse(expiresAt))) throw new PolicyConfigError("POLICY_EXPIRES_AT invalid", "POLICY_EXPIRES_AT");
 
@@ -76,6 +89,8 @@ export function loadPolicyConfig(env: NodeJS.ProcessEnv = process.env): PolicyCo
     allowedRecipients: recipients,
     allowedServiceIds,
     allowedEnsNames,
+    allowedEndpoints,
+    authorizationTtlSeconds,
     maxPerPaymentTinybars: maxPerPayment,
     totalBudgetTinybars: totalBudget,
     currency: "HBAR",

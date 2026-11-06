@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { filterOffers, type CapabilityOfferRow } from "../src/arkiv/index.js";
+import { filterOffers } from "../src/arkiv/discover.js";
+import type { CapabilityOfferRow } from "../src/arkiv/schema.js";
 
 function offer(partial: Partial<CapabilityOfferRow> & Pick<CapabilityOfferRow, "entityKey" | "payto" | "pricetinybars">): CapabilityOfferRow {
   return {

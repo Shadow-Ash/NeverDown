@@ -11,6 +11,9 @@ export type PolicyConfig = {
   allowedRecipients: readonly string[];
   allowedServiceIds: readonly string[];
   allowedEnsNames?: readonly string[];
+  /** Normalized endpoint base URLs (origin + path, no trailing slash). */
+  allowedEndpoints: readonly string[];
+  authorizationTtlSeconds: number;
   maxPerPaymentTinybars: bigint;
   totalBudgetTinybars: bigint;
   currency: Currency;
@@ -52,7 +55,44 @@ export type AuthorizationRecord = {
   authorizedAt: string;
   x402PaymentRequiredHash: string;
   idempotencyKey: string;
+  expiresAt: string;
 };
+
+/** Request accepted by the payment worker. Nothing else (amount, payTo, keys, approvals) comes from the caller. */
+export type PurchaseRequest = {
+  purchaseId: string;
+  serviceId: string;
+  endpoint: string;
+};
+
+export type AuditStatus = "disabled" | "published" | "failed";
+
+export type PurchaseOutcome =
+  | {
+      status: "SETTLED";
+      purchaseId: string;
+      transactionId: string;
+      hashscanUrl: string;
+      rpcResult: unknown;
+      httpStatus: number;
+      auditStatus: AuditStatus;
+    }
+  | {
+      /** Nothing reserved or nothing signed: no spend. */
+      status: "DENIED" | "RELEASED";
+      purchaseId: string;
+      denyReason: string;
+      message: string;
+      auditStatus: AuditStatus;
+    }
+  | {
+      /** Signing started; settlement may have happened. Budget stays reserved. */
+      status: "UNCERTAIN";
+      purchaseId: string;
+      denyReason: "PAYMENT_UNCERTAIN";
+      message: string;
+      auditStatus: AuditStatus;
+    };
 
 export type PolicyDecision =
   | { approved: true; authorization: AuthorizationRecord }
@@ -72,4 +112,14 @@ export type DenyReasonCode =
   | "INVALID_AMOUNT"
   | "DUPLICATE_PURCHASE_ID"
   | "POLICY_VIOLATION"
-  | "ENS_NOT_ALLOWLISTED";
+  | "ENS_NOT_ALLOWLISTED"
+  | "ENDPOINT_NOT_APPROVED"
+  | "ENDPOINT_MISMATCH"
+  | "AUDIT_UNAVAILABLE"
+  | "REQUIREMENT_CHANGED"
+  | "CHALLENGE_FAILED"
+  | "NO_RESERVATION"
+  | "NOT_RESERVED"
+  | "NO_AUTHORIZATION"
+  | "AUTHORIZATION_MISMATCH"
+  | "AUTHORIZATION_EXPIRED";
