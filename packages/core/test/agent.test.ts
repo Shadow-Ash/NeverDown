@@ -3,6 +3,29 @@ import { describe, it } from "node:test";
 import { createHermeticToolBelt, runAgentScenario } from "../src/agent/index.js";
 
 describe("C8 supreme agent (hermetic)", () => {
+  it("probes the public URL and installs only the RPC URL after settlement", async () => {
+    const tools = createHermeticToolBelt();
+    const probed: string[] = [];
+    const installed: string[] = [];
+    const originalProbe = tools.proof_of_capability;
+    const originalInstall = tools.install_standby;
+    tools.proof_of_capability = async (input) => { probed.push(input.rpcUrl); return originalProbe(input); };
+    tools.install_standby = async (input) => { installed.push(input.rpcUrl); return originalInstall(input); };
+    const receipt = await runAgentScenario("procure", tools);
+    assert.equal(receipt.success, true);
+    assert.deepEqual(probed, ["http://candidate-rpc.local/probe"]);
+    assert.deepEqual(installed, ["http://candidate-rpc.local/rpc"]);
+  });
+
+  it("does not install after authorization without settlement", async () => {
+    const tools = createHermeticToolBelt();
+    let installed = false;
+    tools.request_purchase = async () => ({ approved: true, settled: false });
+    tools.install_standby = async () => { installed = true; return { installed: true, detail: {} }; };
+    const receipt = await runAgentScenario("procure", tools);
+    assert.equal(receipt.success, false);
+    assert.equal(installed, false);
+  });
   it("procure: discover → ens → poc → purchase → install", async () => {
     const tools = createHermeticToolBelt();
     const receipt = await runAgentScenario("procure", tools);

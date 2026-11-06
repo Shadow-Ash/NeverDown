@@ -94,12 +94,12 @@ export async function runAgentScenario(
   }
 
   const poc = await tools.proof_of_capability({
-    rpcUrl: selected.serviceurl,
+    rpcUrl: selected.probeurl,
     expectedChainId,
     payTo: selected.payto,
     ensPayTo: ens.records.hederaAccount ?? selected.payto,
   });
-  steps.push(step("proof_of_capability", poc.pass, { rpcUrl: selected.serviceurl }, poc));
+  steps.push(step("proof_of_capability", poc.pass, { rpcUrl: selected.probeurl }, poc));
   if (!poc.pass) {
     return {
       schemaVersion: "neverdown-evidence-v1",
@@ -122,8 +122,8 @@ export async function runAgentScenario(
     payTo: selected.payto,
     amountTinybars: selected.pricetinybars.toString(),
   });
-  steps.push(step("request_purchase", purchase.approved, { purchaseId, payTo: selected.payto }, purchase));
-  if (!purchase.approved) {
+  steps.push(step("request_purchase", purchase.approved && purchase.settled === true, { purchaseId, payTo: selected.payto }, purchase));
+  if (!purchase.approved || purchase.settled !== true) {
     return {
       schemaVersion: "neverdown-evidence-v1",
       scenario,
@@ -135,12 +135,12 @@ export async function runAgentScenario(
       poc,
       purchase,
       denyReason: purchase.denyReason,
-      notes: [...notes, "purchase denied"],
+      notes: [...notes, purchase.approved ? "purchase not settled — will not install" : "purchase denied"],
     };
   }
 
-  const install = await tools.install_standby({ rpcUrl: selected.serviceurl });
-  steps.push(step("install_standby", install.installed, { rpcUrl: selected.serviceurl }, install));
+  const install = await tools.install_standby({ rpcUrl: selected.rpcurl });
+  steps.push(step("install_standby", install.installed, { rpcUrl: selected.rpcurl }, install));
 
   return {
     schemaVersion: "neverdown-evidence-v1",
