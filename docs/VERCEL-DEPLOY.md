@@ -1,6 +1,6 @@
 # Vercel console preview
 
-Production URL: https://neverdownapp.vercel.app
+Production URL: https://getneverdown.vercel.app
 
 The Vercel project serves a static build of `apps/web/public`. The root `vercel.json` runs `scripts/build-vercel-static.mjs`, which copies only the page, logo images, fonts, and font license to `dist-vercel`. It includes the five-card console and theme toggle. No Hedera, Arkiv, or signing credentials are sent to Vercel.
 
