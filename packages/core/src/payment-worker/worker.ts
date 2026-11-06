@@ -1,4 +1,5 @@
 import { runPurchase } from "./purchase.js";
+import { readFileSync, statSync } from "node:fs";
 import { buildPurchaseDeps, loadCredentials } from "./purchase.js";
 import { parseWorkerRequestMessage, parseHelloMessage, PaymentWorkerError, isRecord } from "./protocol.js";
 
@@ -20,9 +21,10 @@ export function createWorkerServer(deps: any, send: (msg: any) => void) {
         serviceId: reqMsg.request.serviceId,
         endpoint: reqMsg.request.endpoint,
       });
-      send({ type: "result", requestId: reqMsg.requestId, outcome });
+      const serial = JSON.parse(JSON.stringify(outcome, (_k, v) => (typeof v === "bigint" ? v.toString() : v))) as any;
+      send({ type: "result", requestId: reqMsg.requestId, outcome: serial });
     } catch (e) {
-      send({ type: "error", requestId: reqMsg.requestId, code: "WORKER_ERROR", message: e instanceof Error ? e.message : "worker error" });
+      send({ type: "error", requestId: reqMsg.requestId, code: "WORKER_ERROR", message: e instanceof Error ? e.message : String(e) });
     } finally {
       running = false;
       const next = queue.shift();
@@ -65,6 +67,28 @@ export function createWorkerServer(deps: any, send: (msg: any) => void) {
 
 let loadedCredentials: any;
 export function startWorker() {
+  const envFile = process.env.PAYMENT_WORKER_ENV_FILE;
+  if (envFile) {
+    try {
+      const raw = readFileSync(envFile, "utf8");
+      for (const line of raw.split(/\r?\n/)) {
+        const trimmed = line.trim();
+        if (!trimmed || trimmed.startsWith("#")) continue;
+        const idx = trimmed.indexOf("=");
+        if (idx <= 0) continue;
+        const key = trimmed.slice(0, idx).trim();
+        const value = trimmed.slice(idx+1).trim().replace(/^["']|["']$/g, "");
+        if (key) process.env[key] = value;
+      }
+    } catch {}
+    try {
+        const st = statSync(envFile);
+      if ((st.mode & 0o077) !== 0) {
+        if (process.send) process.send({ type: "error", requestId: "?", code: "UNSAFE_ENV_FILE", message: "worker credential file must be mode 0600" });
+        process.exit(1);
+      }
+    } catch {}
+  }
   const deps = buildPurchaseDeps(process.env);
   loadedCredentials = loadCredentials(process.env);
   recover(deps.store);
@@ -75,3 +99,5 @@ export function startWorker() {
   process.on("disconnect", () => process.exit(0));
   return deps;
 }
+
+if (process.send) startWorker();
