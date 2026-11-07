@@ -25,6 +25,7 @@ for(const name of ["index.html","console.html"]){
 }
 const consoleHtml=readFileSync(resolve(publicDir,"console.html"),"utf8");
 assert.match(consoleHtml,/Resilience, under your control/);
-assert.match(consoleHtml,/height:auto|min-height:520px/);
+assert.match(consoleHtml,/\.card-flow \.card\{min-width:0;min-height:460px/);
+assert.doesNotMatch(consoleHtml,/height:\s*520px/);
 
 console.log("Static frontend checks passed.");
