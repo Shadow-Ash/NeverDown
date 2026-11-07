@@ -37,7 +37,16 @@
     "test": "npm run test --workspace=@neverdown/core && npm run test --workspace=@neverdown/sellers && npm run test --workspace=@neverdown/gateway && npm run test --workspace=@neverdown/web",
     "test:web": "npm run test --workspace=@neverdown/web",
     "test:smoke": "node scripts/smoke-web.mjs",
-    "check:local": "pnpm typecheck && pnpm lint && pnpm test"
+    "check:local": "pnpm typecheck && pnpm lint && pnpm test",
+    "demo:local:setup": "node scripts/demo-local.mjs setup",
+    "demo:local:status": "node scripts/demo-local.mjs status",
+    "demo:local:reset": "node scripts/demo-local.mjs reset",
+    "demo:local:seller": "node scripts/demo-service.mjs seller",
+    "demo:local:gateway": "node scripts/demo-service.mjs gateway",
+    "demo:local:web": "node scripts/demo-service.mjs web",
+    "demo:local:rpc:primary": "node scripts/demo-service.mjs rpc-primary",
+    "demo:local:rpc:standby": "node scripts/demo-service.mjs rpc-standby",
+    "demo:ready": "node scripts/check-ready.mjs --demo"
   },
   "devDependencies": {
     "tsx": "^4.20.0"

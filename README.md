@@ -24,6 +24,7 @@ It is **general dependency resilience**: you attach NeverDown to a failure class
 | **[AGENTS.md](AGENTS.md)** | Short agent entrypoint |
 | **[docs/AGENT-CONTEXT.md](docs/AGENT-CONTEXT.md)** | Full handoff: vision, flow, and chunk status |
 | **[docs/TECHNICAL-AUDIT.md](docs/TECHNICAL-AUDIT.md)** | Source-verified architecture, frontend and release-readiness audit |
+| **[docs/LOCAL-DEVELOPMENT.md](docs/LOCAL-DEVELOPMENT.md)** | Local mock demo and live testnet terminal guide |
 | **[docs/LIVE-BACKEND-ACCEPTANCE.md](docs/LIVE-BACKEND-ACCEPTANCE.md)** | Live backend setup and acceptance evidence |
 | **[docs/BUILD-CHUNKS.md](docs/BUILD-CHUNKS.md)** | **Detailed C0→C10 steps, gates, file ownership** |
 | **[docs/C2-PAY-ONCE.md](docs/C2-PAY-ONCE.md)** | C2 buyer: env, `pnpm pay:once`, HashScan |

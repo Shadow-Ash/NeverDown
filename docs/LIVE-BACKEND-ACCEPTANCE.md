@@ -52,3 +52,18 @@ The 2026-11-06 acceptance run used separate local env profiles, since consolidat
 - Deny: `pnpm agent:deny-live` → `RECIPIENT_NOT_ALLOWLISTED` (no settle)
 
 ENS mainnet name `neverdown.eth` resolves; missing on-chain text records are filled for local rehearsal via `ENS_ALLOW_TEXT_OVERLAY` (see [ENS-SETUP.md](./ENS-SETUP.md)). Publish real `hederaAccount` / `x402Url` texts before treating ENS as prize-complete. Full ID table: [LIVE-EVIDENCE.md](./LIVE-EVIDENCE.md).
+
+
+## Repeatable manual test sequence
+
+See [LOCAL-DEVELOPMENT.md](./LOCAL-DEVELOPMENT.md) for exact terminal commands. Live testnet acceptance order:
+
+1. `pnpm ens:check` — read-only ENS identity validation.
+2. `pnpm arkiv:query` — read-only v2 capability offer discovery.
+3. Start the live seller and gateway processes.
+4. `pnpm preflight:live` — read-only chain, Arkiv, ENS, PoC, x402 challenge and gateway checks. Stop on failure.
+5. `pnpm agent:live` — bounded purchase and standby installation; this is the spend step.
+6. `pnpm agent:deny-live` — check policy denies the unallowlisted recipient without payment.
+7. Verify the fresh HashScan transaction, HCS Mirror Node record and gateway `/status`. Record new IDs for the current run.
+
+Never present a hermetic receipt as a live settlement. Reconcile an `UNCERTAIN` purchase before retrying.
