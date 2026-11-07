@@ -12,7 +12,7 @@ const service=process.argv[2];
 const commands={
  seller:["--import","tsx","apps/sellers/src/server.ts"],
  gateway:["--import","tsx","apps/gateway/src/server.ts"],
- web:["--import","tsx","apps/web/src/server.ts"],
+ web:["--import","tsx","src/server.ts"],
  "rpc-primary":["scripts/mock-rpc.mjs"],
  "rpc-standby":["scripts/mock-rpc.mjs"]
 };
@@ -24,7 +24,8 @@ for(const line of readFileSync(profile,"utf8").split(/\r?\n/)){
 }
 if(service==="rpc-primary"){env.DEMO_RPC_PORT="8788";env.DEMO_RPC_STATE="healthy"}
 if(service==="rpc-standby"){env.DEMO_RPC_PORT="8789";env.DEMO_RPC_STATE="healthy";env.DEMO_RPC_BLOCK="999"}
-const child=spawn(process.execPath,commands[service],{cwd:root,env,stdio:"inherit"});
+const cwd=service==="web"?resolve(root,"apps/web"):root;
+const child=spawn(process.execPath,commands[service],{cwd,env,stdio:"inherit"});
 for(const signal of ["SIGINT","SIGTERM"])process.on(signal,()=>child.kill(signal));
 child.on("error",error=>{console.error(error.message);process.exitCode=1});
 child.on("exit",(code,signal)=>{process.exitCode=code??(signal?128:1)});

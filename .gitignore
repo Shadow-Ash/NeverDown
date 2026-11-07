@@ -21,3 +21,6 @@ ENS_OWNER_PRIVATE_KEY
 *.db-wal
 *.db-shm
 dist-vercel/
+
+# Mock-only local demo profile
+.env.demo.local
