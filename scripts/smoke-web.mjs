@@ -52,6 +52,11 @@ try {
   assert.equal(disabledHook.status, 412);
   const invalid = await fetch(`http://127.0.0.1:${port}/api/run-agent`, {method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({scenario:"invalid"})});
   assert.equal(invalid.status, 400);
+  const hermeticAgent = await fetch(`http://127.0.0.1:${port}/api/run-agent`, {method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({scenario:"deny"})});
+  assert.equal(hermeticAgent.status, 200);
+  const hermeticResult = await hermeticAgent.json();
+  assert.equal(hermeticResult.mode, "hermetic");
+  assert.equal(hermeticResult.receipt?.success, true);
   const malformed = await fetch(`http://127.0.0.1:${port}/api/run-agent`, {method:"POST",headers:{"content-type":"application/json"},body:"{"});
   assert.equal(malformed.status, 400);
   const oversized = await fetch(`http://127.0.0.1:${port}/api/run-agent`, {method:"POST",headers:{"content-type":"application/json"},body:"x".repeat(17 * 1024)});

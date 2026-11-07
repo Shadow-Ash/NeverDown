@@ -109,7 +109,9 @@ async function handleApi(req: IncomingMessage, res: ServerResponse, pathname: st
     const scenario = body.scenario === "deny" ? "deny" : body.scenario === "procure" || body.scenario === undefined ? "procure" : null;
     if (!scenario) { send(res, 400, { error: "scenario must be 'procure' or 'deny'" }); return; }
     const live = process.env.AGENT_LIVE === "true";
-    const script = [join(ROOT, "scripts/run-with-env.mjs"), "agent", "scripts/agent-demo.ts", "--scenario", scenario, ...(live ? ["--live"] : [])];
+    const script = live
+      ? [join(ROOT, "scripts/run-with-env.mjs"), "agent", "scripts/agent-demo.ts", "--scenario", scenario, "--live"]
+      : ["--import", "tsx", join(ROOT, "scripts/agent-demo.ts"), "--scenario", scenario];
     const agent = spawn(process.execPath, script, {
       cwd: ROOT,
       env: process.env,
