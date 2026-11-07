@@ -74,15 +74,14 @@ chmod 600 .env
 
 Fill values locally. Never paste private keys into chat or commit `.env`.
 
-Run read-only checks first:
+Run independent read-only ENS and Arkiv checks first:
 
 ```bash
 pnpm ens:check
 pnpm arkiv:query
-pnpm preflight:live
 ```
 
-Stop if any check fails. Do not relax the allowlist or identity checks.
+Stop if either check fails. Do not relax the allowlist or identity checks.
 
 Start services:
 
@@ -93,7 +92,13 @@ Start services:
 | 3 | `pnpm web:dev` |
 | 4 (optional) | `pnpm coordinator:live` |
 
-Only after the read-only preflight passes, use another terminal for the live agent:
+With the seller and gateway listening, run the complete read-only preflight from another terminal:
+
+```bash
+pnpm preflight:live
+```
+
+This step checks the configured seller's unpaid x402 challenge and gateway readiness, so it cannot pass until those services are running. Stop if it fails. Only after it passes, use another terminal for the live agent:
 
 ```bash
 pnpm agent:live

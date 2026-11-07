@@ -63,7 +63,7 @@ try{
 
   const probe=await request("http://127.0.0.1:4001/probe",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({jsonrpc:"2.0",id:1,method:"eth_chainId",params:[]})});
   assert.equal(probe.status,200);
-  assert.equal((await probe.json()).result,"0xaa36a7");
+  assert.equal((await probe.json()).result,"0x7a69"); // Seller RPC_MODE=mock uses the repository mock chain (31337).
 
   const initial=await request("http://127.0.0.1:8787/status");
   assert.equal((await initial.json()).active,"primary");
