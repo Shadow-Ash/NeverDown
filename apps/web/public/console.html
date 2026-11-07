@@ -30,7 +30,7 @@ html[data-theme="dark"] { --bg:#2a2529; --surface:#242023; --card:#f3f0e7; --car
     h1,h2,h3 { margin-top:0; }
     .workspace { display:grid; grid-template-columns:minmax(0, 1.7fr) minmax(310px, .9fr); gap:24px; align-items:start; }
     .card-flow { min-width:0; margin:0; }
-    .card-flow .card { min-width:0; height:520px; overflow-y:auto; overflow-wrap:anywhere; }
+    .card-flow .card { min-width:0; min-height:520px; overflow-wrap:anywhere; }
     .chat-panel { min-width:0; height:592px; display:flex; flex-direction:column; background:var(--card); color:var(--card-text); border:1px solid var(--card-border); border-radius:18px; box-shadow:var(--card-shadow); overflow:hidden; }
     .chat-panel .muted { color:var(--card-muted); }
     .chat-header { padding:20px 20px 16px; border-bottom:1px solid var(--card-border); }
@@ -197,6 +197,10 @@ pre{max-height:300px;margin-top:18px;padding:16px;border:1px solid #34463a;borde
 @media(max-width:720px){.site-header{gap:10px;padding-inline:16px}.brand span{display:inline;font-size:.95rem}.site-nav{justify-content:flex-start;overflow-x:auto;scrollbar-width:none}.site-nav::-webkit-scrollbar{display:none}.site-nav a{padding:8px 9px;font-size:11px}main{padding:24px 16px 52px}.intro{align-items:flex-start;margin-bottom:20px}.intro h1{font-size:clamp(2rem,9vw,2.8rem)}.card-flow .card{min-height:0;padding:22px}.chat-panel{height:500px}.flow-controls{bottom:8px}.flow-controls button{min-width:94px}}
 @media(max-width:390px){.brand img{width:30px;height:30px}.brand span{font-size:.86rem}.site-nav a{padding-inline:7px}.theme-toggle{width:36px;height:36px}.flow-controls{gap:6px}.flow-controls button{min-width:78px;padding-inline:10px}}
 
+
+.intro-copy{max-width:720px;margin:0;color:var(--nd-muted);font-size:14px;line-height:1.7}
+.intro>.nd-chip{flex:none;margin-bottom:5px}
+@media(max-width:720px){.intro{display:block}.intro>.nd-chip{margin-top:14px}}
 </style>
 </head>
 <body>
@@ -218,9 +222,12 @@ pre{max-height:300px;margin-top:18px;padding:16px;border:1px solid #34463a;borde
 <main id="top">
   <div class="intro">
     <div>
-      <h1>The Policy that Never let you Down</h1>
+      <span class="nd-kicker">Operator workspace · five-act walkthrough</span>
+      <h1>Resilience, under your control.</h1>
+      <p class="intro-copy">Inspect the contract, monitor recovery, run bounded scenarios and review evidence from one workspace.</p>
       <p id="hostedNotice" class="muted" hidden>This hosted preview shows the console. Live status and agent actions run in the local NeverDown backend.</p>
     </div>
+    <span class="nd-chip"><span class="nd-chip-dot"></span>Demo environment</span>
   </div>
 
   <div class="workspace">

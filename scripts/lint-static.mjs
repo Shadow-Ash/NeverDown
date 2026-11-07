@@ -16,4 +16,15 @@ for(const name of ["index.html","console.html"]){
  for(const [,script] of html.matchAll(/<script>([\s\S]*?)<\/script>/gi))new Script(script,{filename:name+".inline.js"});
 }
 for(const asset of ["light-nd.png","dark-nd.png","fonts/Redaction50-Regular.woff2","fonts/Redaction50-Bold.woff2","fonts/Redaction50-Italic.woff2"])assert.ok(existsSync(resolve(publicDir,asset)),"missing asset "+asset);
+for(const name of ["index.html","console.html"]){
+ const html=readFileSync(resolve(publicDir,name),"utf8");
+ assert.match(html,/--nd-accent:#187a55/,name+": shared design token missing");
+ assert.match(html,/prefers-reduced-motion/,name+": reduced-motion support missing");
+ assert.match(html,/Inter,ui-sans-serif,system-ui/,name+": shared UI font missing");
+ assert.match(html,/aria-label=/,name+": accessible labels missing");
+}
+const consoleHtml=readFileSync(resolve(publicDir,"console.html"),"utf8");
+assert.match(consoleHtml,/Resilience, under your control/);
+assert.match(consoleHtml,/height:auto|min-height:520px/);
+
 console.log("Static frontend checks passed.");

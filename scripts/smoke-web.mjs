@@ -39,7 +39,11 @@ try {
   assert.match(homeHtml, /aria-expanded="false"/);
   const consolePage = await fetch(`http://127.0.0.1:${port}/console.html`);
   assert.equal(consolePage.status, 200);
-  assert.match(await consolePage.text(), /Supreme Agent/);
+  const consoleHtml = await consolePage.text();
+  assert.match(consoleHtml, /Supreme Agent/);
+  assert.match(consoleHtml, /Resilience, under your control/);
+  assert.match(consoleHtml, /--nd-accent:#187a55/);
+  assert.match(homeHtml, /--nd-accent:#187a55/);
   assert.equal((await fetch(`http://127.0.0.1:${port}/light-nd.png`)).status, 200);
   assert.equal((await fetch(`http://127.0.0.1:${port}/..%2f..%2fpackage.json`)).status, 404);
   assert.equal((await fetch(`http://127.0.0.1:${port}/api/incidents`)).status, 200);
