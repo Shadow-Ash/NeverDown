@@ -46,7 +46,8 @@
     "demo:local:web": "node scripts/demo-service.mjs web",
     "demo:local:rpc:primary": "node scripts/demo-service.mjs rpc-primary",
     "demo:local:rpc:standby": "node scripts/demo-service.mjs rpc-standby",
-    "demo:ready": "node scripts/check-ready.mjs --demo"
+    "demo:ready": "node scripts/check-ready.mjs --demo",
+    "test:local-demo": "node scripts/smoke-local-demo.mjs"
   },
   "devDependencies": {
     "tsx": "^4.20.0"
